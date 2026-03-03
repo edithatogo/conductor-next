@@ -45,26 +45,30 @@ See individual track folders for detailed implementation history.
 ## Active Tracks
 
 ### Phase 4: Repository Self-Improvement Tracks
-- [x] **repo_improvement_20260303** - Monthly improvement cycle with Ralph Mode 2.0 ✅ **COMPLETE**
+- [x] **repo_improvement_20260303** - Monthly improvement cycle with Ralph Mode 2.0 ✅ **ARCHIVED**
   - Status: 7/7 tasks complete (100%)
   - Started: March 3, 2026
   - Completed: March 3, 2026
+  - Archived: March 4, 2026
   - Priority: P1-High
   - Focus: Adopt upstream P1 improvements, implement Ralph Mode 2.0, establish automation
   - **Phase 1:** 5/5 tasks (100% COMPLETE! ✅)
   - **Phase 2:** 2/2 tasks (100% COMPLETE! ✅)
   - **Phase 5:** 1/1 task (100% COMPLETE! ✅)
   - **Deliverables:** 18 files, 6,926 lines, 19 tests
-  - **Final Report:** conductor/tracks/repo_improvement_20260303/FINAL_REPORT.md
+  - **Final Report:** conductor/archive/repo_improvement_20260303/FINAL_REPORT.md
+  - **Location:** conductor/archive/repo_improvement_20260303/
 
 ---
 
-## Next Track
+## Active Tracks
 
-**Recommended:** `repo_improvement_20260401` - April Improvement Cycle  
+**None** - All tracks complete! 🎉
+
+**Next Recommended:** `repo_improvement_20260401` - April Improvement Cycle
 **Focus Areas:**
-- Implement Artifact Inference Setup (Task 2.1 implementation)
-- Add Plan Mode Warning Hook (Task 2.2)
+- Implement Artifact Inference Setup (from ARTIFACT_INFERENCE_PLAN.md)
+- Add Plan Mode Warning Hook (adopt upstream PR #124)
 - Ralph Mode 2.0 with learning system
 - Cross-platform CI expansion
 

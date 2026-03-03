@@ -1,1 +1,1 @@
-# Test Content
+Mock skill template
