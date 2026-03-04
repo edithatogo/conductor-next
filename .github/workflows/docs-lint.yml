@@ -2,14 +2,14 @@ name: Documentation Lint
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, next]
     paths:
       - '**.md'
       - '**.mmd'
       - '**/csl-json/**'
       - '.markdownlint.json'
   pull_request:
-    branches: [main, master]
+    branches: [main, master, next]
     paths:
       - '**.md'
       - '**.mmd'

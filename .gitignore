@@ -230,3 +230,9 @@ node_modules/
 /.vscode/settings.json
 /.idea/
 /.editor/
+
+# Conductor Local State
+conductor/logs/
+conductor/archive/
+conductor/setup_state.json
+.conductor/improvement-data/

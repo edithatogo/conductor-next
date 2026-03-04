@@ -2,16 +2,15 @@
 """
 Collect data for repository improvement cycle.
 
-This script fetches PRs, issues, and security data from GitHub
-and stores them in .conductor/improvement-data/ for analysis.
+This script fetches PRs, issues, security data, and upstream branch information
+from GitHub and stores them in .conductor/improvement-data/ for analysis.
 
 Usage:
-    python scripts/collect_improvement_data.py [--repo REPO] [--output DIR]
+    python scripts/collect_improvement_data.py [--repo REPO] [--upstream REPO] [--output DIR]
 
 Examples:
     python scripts/collect_improvement_data.py
-    python scripts/collect_improvement_data.py --repo edithatogo/conductor-next
-    python scripts/collect_improvement_data.py --output ./improvement-data
+    python scripts/collect_improvement_data.py --repo edithatogo/conductor-next --upstream gemini-cli-extensions/conductor
 """
 
 import argparse
@@ -22,22 +21,26 @@ from datetime import datetime
 from pathlib import Path
 
 
-def run_gh_command(cmd: str, repo: str = None) -> list:
+def run_gh_command(cmd: str, repo: str = None, json_fields: str = None) -> list:
     """
     Run GitHub CLI command and parse JSON output.
 
     Args:
         cmd: GitHub CLI command (without 'gh' prefix)
         repo: Optional repository override
+        json_fields: Optional JSON fields to return
 
     Returns:
         Parsed JSON output as list/dict, or empty list on error
     """
     try:
+        # Default fields
+        fields = json_fields or "number,title,author,createdAt,updatedAt,labels,state"
+        
         # Build full command
-        full_cmd = f"gh {cmd} --json number,title,author,createdAt,updatedAt,labels,state"
+        full_cmd = f"gh {cmd} --json {fields}"
         if repo:
-            full_cmd = f"gh {cmd} --repo {repo} --json number,title,author,createdAt,updatedAt,labels,state"
+            full_cmd = f"gh {cmd} --repo {repo} --json {fields}"
 
         result = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, timeout=30)
 
@@ -146,6 +149,58 @@ def collect_issues(repo: str, output_file: Path) -> dict:
     return {"open_total": len(open_issues), "high_priority": p0_p1_issues}
 
 
+def collect_upstream_branches(upstream_repo: str, output_file: Path) -> dict:
+    """
+    Collect upstream branch data (dev, beta, staging).
+
+    Args:
+        upstream_repo: Upstream repository name
+        output_file: Path to output JSON file
+
+    Returns:
+        Dict with branch statistics
+    """
+    print(f"Fetching branches from upstream {upstream_repo}...")
+    
+    # Using gh api to get branches as gh branch command is local-only
+    try:
+        cmd = f"gh api repos/{upstream_repo}/branches"
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+        
+        if result.returncode != 0:
+            print(f"Warning: Failed to fetch upstream branches: {upstream_repo}", file=sys.stderr)
+            return {"branches": [], "error": result.stderr}
+            
+        branches = json.loads(result.stdout)
+        
+        # Filter for dev/beta/staging
+        interesting_patterns = ["dev", "beta", "staging", "develop", "next"]
+        interesting_branches = [
+            b for b in branches 
+            if any(pattern in b["name"].lower() for pattern in interesting_patterns)
+        ]
+        
+        data = {
+            "all_branches": [b["name"] for b in branches],
+            "beta_branches": interesting_branches,
+            "upstream_repo": upstream_repo,
+            "fetched_at": datetime.now().isoformat()
+        }
+        
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            
+        return {
+            "total_branches": len(branches),
+            "beta_branches_count": len(interesting_branches),
+            "beta_branch_names": [b["name"] for b in interesting_branches]
+        }
+        
+    except Exception as e:
+        print(f"Warning: Error collecting upstream branches: {e}", file=sys.stderr)
+        return {"error": str(e)}
+
+
 def collect_security_data(output_file: Path) -> dict:
     """
     Collect security scan data.
@@ -229,6 +284,15 @@ def generate_summary(stats: dict, output_file: Path):
 
 **Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
+## Upstream Synchronization (Beta Tool)
+
+| Metric | Value |
+|--------|-------|
+| Upstream Repo | {stats.get("upstream", {}).get("upstream_repo", "N/A")} |
+| Total Branches | {stats.get("upstream", {}).get("total_branches", "N/A")} |
+| Beta/Dev Branches | {stats.get("upstream", {}).get("beta_branches_count", "N/A")} |
+| Target Branches | {", ".join(stats.get("upstream", {}).get("beta_branch_names", [])) or "None detected"} |
+
 ## Pull Requests
 
 | Metric | Value |
@@ -254,6 +318,7 @@ def generate_summary(stats: dict, output_file: Path):
 
 ## Files Generated
 
+- `upstream.json` - Upstream branch data (New)
 - `prs.json` - Pull request data
 - `issues.json` - Issue data
 - `security.json` - Security scan results
@@ -261,10 +326,10 @@ def generate_summary(stats: dict, output_file: Path):
 
 ## Next Steps
 
-1. Review open PRs (merge Dependabot, review community PRs)
-2. Analyze high-priority issues
-3. Address security vulnerabilities
-4. Create improvement track based on findings
+1. **Sync & Merge:** Analyze upstream dev/beta branches for merging
+2. **Deprecation Audit:** Identify local features redundant with upstream
+3. **PR Review:** Merge Dependabot and review community PRs
+4. **Security:** Fix high-priority vulnerabilities
 """
 
     with open(output_file, "w", encoding="utf-8") as f:
@@ -281,6 +346,10 @@ def main():
 
     parser.add_argument(
         "--repo", default="edithatogo/conductor-next", help="Repository to analyze (default: edithatogo/conductor-next)"
+    )
+    
+    parser.add_argument(
+        "--upstream", default="gemini-cli-extensions/conductor", help="Upstream repository (default: gemini-cli-extensions/conductor)"
     )
 
     parser.add_argument(
@@ -299,6 +368,7 @@ def main():
 
     print("[READY] Starting improvement data collection...")
     print(f"Repository: {args.repo}")
+    print(f"Upstream:   {args.upstream}")
     print(f"Output directory: {output_dir}")
     print()
 
@@ -315,6 +385,12 @@ def main():
     stats = {}
 
     try:
+        # Collect Upstream branches
+        upstream_file = output_dir / "upstream.json"
+        stats["upstream"] = collect_upstream_branches(args.upstream, upstream_file)
+        stats["upstream"]["upstream_repo"] = args.upstream
+        print(f"  [OK] Collected {stats['upstream'].get('beta_branches_count', 0)} beta/dev branches")
+
         # Collect PRs
         prs_file = output_dir / "prs.json"
         stats["prs"] = collect_prs(args.repo, prs_file)
@@ -341,6 +417,7 @@ def main():
 
         print()
         print("[SUMMARY] Collection Summary:")
+        print(f"   Upstream: {stats['upstream'].get('beta_branches_count', 0)} dev branches found")
         print(f"   PRs: {stats['prs']['open_total']} open ({stats['prs']['dependabot']} Dependabot)")
         print(f"   Issues: {stats['issues']['open_total']} open ({stats['issues']['high_priority']} high priority)")
         if not args.no_security:

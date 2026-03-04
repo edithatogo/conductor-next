@@ -293,8 +293,11 @@ Automated sync from [{upstream}](https://github.com/{upstream})
 
         return None
 
-    def sync(self) -> dict:
+    def sync(self, target_branch: str = "main") -> dict:
         """Run the sync process for all upstreams.
+
+        Args:
+            target_branch: Target branch name in local repository
 
         Returns:
             Sync results summary
@@ -318,12 +321,12 @@ Automated sync from [{upstream}](https://github.com/{upstream})
                 print(f"[INFO] Latest commit: {upstream_sha[:7]}")
 
                 # Check for conflicts
-                has_conflicts = self.check_merge_conflicts(upstream)
+                has_conflicts = self.check_merge_conflicts(upstream, target_branch)
 
                 if has_conflicts:
                     print(f"[CONFLICT] Merge conflicts detected")
                     # Create draft PR for manual resolution
-                    pr = self.create_sync_pr(upstream, upstream_sha)
+                    pr = self.create_sync_pr(upstream, upstream_sha, target_branch)
                     self.state.update_sync(upstream, upstream_sha, "conflict")
                     results["upstreams"].append({
                         "name": upstream,
@@ -367,6 +370,11 @@ def main():
         help="Target repository (default: edithatogo/conductor-next)",
     )
     parser.add_argument(
+        "--branch",
+        default="main",
+        help="Target branch in local repository (default: main)",
+    )
+    parser.add_argument(
         "--upstream",
         action="append",
         default=[
@@ -393,6 +401,7 @@ def main():
     print("Upstream Sync Bot")
     print("="*60)
     print(f"Target: {args.target}")
+    print(f"Branch: {args.branch}")
     print(f"Upstreams: {', '.join(args.upstream)}")
     print(f"State file: {args.state_file}")
     print(f"Dry run: {args.dry_run}")
@@ -404,7 +413,7 @@ def main():
 
     try:
         bot = UpstreamSyncBot(args.target, args.upstream, args.state_file)
-        results = bot.sync()
+        results = bot.sync(target_branch=args.branch)
 
         print("\n" + "="*60)
         print("Sync Summary")

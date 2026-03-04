@@ -65,7 +65,7 @@ jobs:
           fi
           
           # Run sync
-          python scripts/sync_upstream.py $ARGS
+          python scripts/sync_upstream.py $ARGS --branch next
           
       - name: Upload sync state
         if: always()

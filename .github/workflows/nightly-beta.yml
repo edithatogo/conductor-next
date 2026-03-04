@@ -1,0 +1,61 @@
+name: Nightly Beta Build
+
+on:
+  schedule:
+    # Run every night at 03:00 UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  build-beta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: next
+
+      - name: Setup Mamba
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          activate-environment: conductor
+          mamba-version: "*"
+          channels: conda-forge,defaults
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install JS dependencies
+        run: |
+          cd conductor-vscode
+          npm ci
+
+      - name: Build VSIX
+        run: |
+          cd conductor-vscode
+          # Using npx vsce package to create the extension
+          npx vsce package -o ../conductor-beta.vsix
+
+      - name: Upload Beta VSIX Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: conductor-beta-vsix
+          path: conductor-beta.vsix
+          retention-days: 7
+
+      - name: Update Beta Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="nightly-beta"
+          # Attempt to delete existing nightly release and tag to keep it "fresh"
+          gh release delete "$TAG" --yes || echo "No existing release to delete"
+          
+          # Create new pre-release
+          gh release create "$TAG" conductor-beta.vsix \
+            --title "Nightly Beta Build" \
+            --notes "Bleeding edge build from the 'next' branch. Generated on $(date -u). Use with caution!" \
+            --prerelease

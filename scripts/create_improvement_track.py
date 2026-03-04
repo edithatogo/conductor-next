@@ -2,8 +2,9 @@
 """
 Create improvement track from collected data.
 
-This script analyzes collected improvement data and creates
-a new Conductor track with prioritized tasks.
+This script analyzes collected improvement data (including upstream branches)
+and creates a new Conductor track with prioritized tasks, focusing on
+the "Beta Tool" synchronization and feature parity.
 
 Usage:
     python scripts/create_improvement_track.py [--data DIR] [--output DIR]
@@ -15,6 +16,7 @@ Examples:
 
 import argparse
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -28,7 +30,7 @@ def load_data(data_dir: Path) -> dict:
         data_dir: Directory containing collected data files
 
     Returns:
-        Dict with prs, issues, security data
+        Dict with prs, issues, security, and upstream data
     """
     data = {}
 
@@ -49,8 +51,55 @@ def load_data(data_dir: Path) -> dict:
     if security_file.exists():
         with open(security_file, "r", encoding="utf-8") as f:
             data["security"] = json.load(f)
+            
+    # Load upstream
+    upstream_file = data_dir / "upstream.json"
+    if upstream_file.exists():
+        with open(upstream_file, "r", encoding="utf-8") as f:
+            data["upstream"] = json.load(f)
 
     return data
+
+
+def prioritize_upstream_sync(upstream_data: dict) -> List[dict]:
+    """
+    Create tasks for upstream synchronization and beta merging.
+
+    Args:
+        upstream_data: Upstream branch data
+
+    Returns:
+        List of sync tasks
+    """
+    tasks = []
+    beta_branches = upstream_data.get("beta_branches", [])
+    upstream_repo = upstream_data.get("upstream_repo", "unknown")
+
+    if not beta_branches:
+        tasks.append({
+            "title": f"Sync from upstream main ({upstream_repo})",
+            "priority": "P1",
+            "description": "No dev/beta branches detected. Syncing from main.",
+            "branch": "main"
+        })
+    else:
+        for branch in beta_branches:
+            tasks.append({
+                "title": f"Merge upstream beta branch: {branch['name']}",
+                "priority": "P0",
+                "description": f"Integrate latest beta features from {upstream_repo}:{branch['name']}",
+                "branch": branch['name']
+            })
+            
+    # Add mandatory parity audit task
+    tasks.append({
+        "title": "Upstream Feature Parity & Deprecation Audit",
+        "priority": "P1",
+        "description": "Compare local features with new upstream features and identify redundancies.",
+        "type": "audit"
+    })
+
+    return tasks
 
 
 def prioritize_prs(prs_data: dict) -> List[dict]:
@@ -195,7 +244,7 @@ def generate_track_spec(tasks: dict, output_dir: Path):
     track_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate spec.md
-    spec_content = f"""# Repository Improvement Track - {datetime.now().strftime("%B %Y")}
+    spec_content = f"""# Repository Improvement Track - {datetime.now().strftime("%B %Y")} (Beta)
 
 **Track ID:** `{track_id}`  
 **Created:** {datetime.now().strftime("%Y-%m-%d")}  
@@ -207,9 +256,10 @@ def generate_track_spec(tasks: dict, output_dir: Path):
 
 ## Executive Summary
 
-This track implements improvements based on automated data collection performed on {datetime.now().strftime("%Y-%m-%d")}.
+This track implements improvements and upstream synchronization for the **Conductor Beta Tool**.
 
 **Key Findings:**
+- Upstream: {len(tasks.get("upstream", []))} sync tasks (including beta merges)
 - PRs: {len(tasks.get("prs", []))} open PRs requiring review
 - Issues: {len(tasks.get("issues", []))} upstream issues to analyze
 - Security: {len(tasks.get("security", []))} security remediation tasks
@@ -218,6 +268,7 @@ This track implements improvements based on automated data collection performed 
 
 ## Data Sources
 
+- `../.conductor/improvement-data/upstream.json` - Upstream branch data
 - `../.conductor/improvement-data/prs.json` - Pull request data
 - `../.conductor/improvement-data/issues.json` - Issue data
 - `../.conductor/improvement-data/security.json` - Security scan results
@@ -226,20 +277,21 @@ This track implements improvements based on automated data collection performed 
 
 ## Implementation Strategy
 
-1. **Phase 1: Security First** - Address all P0 security vulnerabilities
-2. **Phase 2: PR Management** - Review and merge open PRs
-3. **Phase 3: Issue Analysis** - Analyze and prioritize upstream issues
-4. **Phase 4: Implementation** - Implement selected improvements
+1. **Phase 0: Upstream Sync & Beta Merge** - Integrate latest upstream dev/beta changes
+2. **Phase 1: Feature Parity Audit** - Identify redundant local features
+3. **Phase 2: Security First** - Address all P0 security vulnerabilities
+4. **Phase 3: PR Management** - Review and merge open PRs
+5. **Phase 4: Issue Analysis & Implementation** - Analyze and prioritize upstream issues
 
 ---
 
 ## Success Criteria
 
+- [ ] Upstream beta/dev branches merged into local main
+- [ ] Feature parity audit complete; redundancies identified
 - [ ] All P0 security vulnerabilities resolved
 - [ ] All Dependabot PRs merged
-- [ ] Community PRs reviewed
 - [ ] Upstream issues analyzed and adoption decisions made
-- [ ] Improvement track created for adopted issues
 
 ---
 
@@ -250,7 +302,7 @@ This track implements improvements based on automated data collection performed 
         f.write(spec_content)
 
     # Generate plan.md
-    plan_content = f"""# Repository Improvement Track - Implementation Plan
+    plan_content = f"""# Repository Improvement Track - Implementation Plan (Beta)
 
 **Track ID:** `{track_id}`  
 **Created:** {datetime.now().strftime("%Y-%m-%d")}  
@@ -258,7 +310,29 @@ This track implements improvements based on automated data collection performed 
 
 ---
 
-## Phase 1: Security Remediation [checkpoint: pending]
+## Phase 0: Upstream Synchronization & Beta Merging [checkpoint: pending]
+
+"""
+
+    # Add upstream sync tasks
+    for i, task in enumerate(tasks.get("upstream", []), 1):
+        plan_content += f"""### Task 0.{i}: {task["title"]}
+**Status:** [ ]  
+**Priority:** {task["priority"]}  
+**Description:** {task["description"]}
+
+**Sub-tasks:**
+- [ ] Fetch upstream changes
+- [ ] Merge {task.get('branch', 'main')} into local
+- [ ] Resolve conflicts (Prioritize upstream features)
+- [ ] Run validation tests
+- [ ] Commit with git note
+
+---
+
+"""
+
+    plan_content += """## Phase 1: Security Remediation [checkpoint: pending]
 
 """
 
@@ -328,9 +402,17 @@ This track implements improvements based on automated data collection performed 
 
     plan_content += f"""## Checkpoints
 
+### Phase 0 Checkpoint
+**Status:** [ ]  
+**Expected Date:** {datetime.now().strftime("%Y-%m-%d")} + 2 days
+
+**Verification:**
+- [ ] Upstream branches merged
+- [ ] Feature parity audit complete
+
 ### Phase 1 Checkpoint
 **Status:** [ ]  
-**Expected Date:** {datetime.now().strftime("%Y-%m-%d")} + 3 days
+**Expected Date:** {datetime.now().strftime("%Y-%m-%d")} + 4 days
 
 **Verification:**
 - [ ] All P0 security vulnerabilities resolved
@@ -343,16 +425,6 @@ This track implements improvements based on automated data collection performed 
 **Verification:**
 - [ ] All PRs reviewed
 - [ ] Dependabot PRs merged
-- [ ] Community PRs have decisions
-
-### Phase 3 Checkpoint
-**Status:** [ ]  
-**Expected Date:** {datetime.now().strftime("%Y-%m-%d")} + 2 weeks
-
-**Verification:**
-- [ ] All issues analyzed
-- [ ] Adoption decisions documented
-- [ ] Improvement tracks created
 
 ---
 
@@ -410,6 +482,7 @@ def main():
         print(f"[ERROR] Error: No data found in {args.data}")
         sys.exit(1)
 
+    print(f"  [OK] Loaded Upstream: {'Yes' if 'upstream' in data else 'No'}")
     print(f"  [OK] Loaded PRs: {len(data.get('prs', {}).get('open', []))} open")
     print(f"  [OK] Loaded Issues: {len(data.get('issues', {}).get('open', []))} open")
     print(f"  [OK] Loaded Security: {'Yes' if 'security' in data else 'No'}")
@@ -418,11 +491,13 @@ def main():
     # Prioritize tasks
     print("Prioritizing tasks...")
     tasks = {
+        "upstream": prioritize_upstream_sync(data.get("upstream", {})),
         "security": prioritize_security(data.get("security", {})),
         "prs": prioritize_prs(data.get("prs", {})),
         "issues": prioritize_issues(data.get("issues", {})),
     }
 
+    print(f"  Sync tasks: {len(tasks['upstream'])}")
     print(f"  Security tasks: {len(tasks['security'])}")
     print(f"  PR tasks: {len(tasks['prs'])}")
     print(f"  Issue tasks: {len(tasks['issues'])}")
@@ -442,7 +517,7 @@ def main():
     print("[SUMMARY] Track Summary:")
     print(f"   Track ID: improvement_{datetime.now().strftime('%Y%m%d')}")
     print(f"   Total tasks: {total_tasks}")
-    print("   Priority: P1-High")
+    print("   Priority: P1-High (Beta Sync)")
     print("   Estimated duration: 1-2 weeks")
     print()
     print("[OK] Track creation complete!")
