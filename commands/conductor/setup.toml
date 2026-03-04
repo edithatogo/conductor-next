@@ -358,7 +358,17 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
 ---
 
 ## 3.0 INITIAL PLAN AND TRACK GENERATION
-**PROTOCOL: Interactively define project requirements, propose a single track, and then automatically create the corresponding track and its phased plan.**
+**PROTOCOL: Interactively define project requirements
+### 3.0.1 Pre-Requisite (Track Cleanup)
+**PROTOCOL: Before generating the first track, ensure clean state by removing incomplete track folders.**
+
+1.  **Check for Incomplete Tracks:** Check if `conductor/tracks/` directory exists.
+2.  **If Exists:**
+    -   Announce: "Detected existing track folder. Cleaning up to ensure clean, consistent state."
+    -   **Delete:** Remove the entire `conductor/tracks/` directory
+    -   **Confirm:** Announce: "Incomplete track folder removed. Proceeding with fresh track generation."
+3.  **Continue:** Immediately proceed to Section 3.1.
+, propose a single track, and then automatically create the corresponding track and its phased plan.**
 
 ### 3.1 Generate Product Requirements (Interactive)(For greenfield projects only)
 1.  **Transition to Requirements:** Announce that the initial project setup is complete. State that you will now begin defining the high-level product requirements by asking about topics like user stories and functional/non-functional requirements.
@@ -813,7 +823,17 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
 ---
 
 ## 3.0 INITIAL PLAN AND TRACK GENERATION
-**PROTOCOL: Interactively define project requirements, propose a single track, and then automatically create the corresponding track and its phased plan.**
+**PROTOCOL: Interactively define project requirements
+### 3.0.1 Pre-Requisite (Track Cleanup)
+**PROTOCOL: Before generating the first track, ensure clean state by removing incomplete track folders.**
+
+1.  **Check for Incomplete Tracks:** Check if `conductor/tracks/` directory exists.
+2.  **If Exists:**
+    -   Announce: "Detected existing track folder. Cleaning up to ensure clean, consistent state."
+    -   **Delete:** Remove the entire `conductor/tracks/` directory
+    -   **Confirm:** Announce: "Incomplete track folder removed. Proceeding with fresh track generation."
+3.  **Continue:** Immediately proceed to Section 3.1.
+, propose a single track, and then automatically create the corresponding track and its phased plan.**
 
 ### 3.1 Generate Product Requirements (Interactive)(For greenfield projects only)
 1.  **Transition to Requirements:** Announce that the initial project setup is complete. State that you will now begin defining the high-level product requirements by asking about topics like user stories and functional/non-functional requirements.
