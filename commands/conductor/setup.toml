@@ -126,8 +126,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     -   **CRITICAL: You MUST NOT execute any tool calls until the user has provided a response.**
     -   **Upon receiving the user's response:**
         -   Execute `mkdir -p conductor`.
-        -   **Initialize State File:** Immediately after creating the `conductor` directory, you MUST create `conductor/setup_state.json` with the exact content:
-            `{"last_successful_step": ""}`
+        -   **Initialize State File:** Immediately after creating the `conductor` directory, you MUST create  with the exact content:
         -   **Seed the Product Guide:** Write the user's response into `conductor/product.md` under a header named `# Initial Concept`.
 
 5.  **Continue:** Immediately proceed to the next section.
@@ -178,8 +177,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     > Please respond with A or B."
     - **Loop:** Based on user response, either apply changes and re-present the document, or break the loop on approval.
 5.  **Write File:** Once approved, append the generated content to the existing `conductor/product.md` file, preserving the `# Initial Concept` section.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.1_product_guide"}`
+6.
 7.  **Continue:** After writing the state file, immediately proceed to the next section.
 
 ### 2.2 Generate Product Guidelines (Interactive)
@@ -228,8 +226,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     > Please respond with A or B."
     - **Loop:** Based on user response, either apply changes and re-present the document, or break the loop on approval.
 5.  **Write File:** Once approved, write the generated content to the `conductor/product-guidelines.md` file.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.2_product_guidelines"}`
+6.
 7.  **Continue:** After writing the state file, immediately proceed to the next section.
 
 ### 2.3 Generate Tech Stack (Interactive)
@@ -286,8 +283,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     - **Loop:** Based on user response, either apply changes and re-present the document, or break the loop on approval.
 5.  **Confirm Final Content:** Proceed only after the user explicitly approves the draft.
 6.  **Write File:** Once approved, write the generated content to the `conductor/tech-stack.md` file.
-7.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.3_tech_stack"}`
+7.
 8.  **Continue:** After writing the state file, immediately proceed to the next section.
 
 ### 2.4 Select Guides (Interactive)
@@ -309,8 +305,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
                     A) Yes, I want to proceed with the suggested code style guides.
                     B) No, I want to add more code style guides.
     -   **Action:** Construct and execute a command to create the directory and copy all selected files. For example: `mkdir -p conductor/code_styleguides && cp ~/.gemini/extensions/conductor/templates/code_styleguides/python.md ~/.gemini/extensions/conductor/templates/code_styleguides/javascript.md conductor/code_styleguides/`
-    -   **Commit State:** Upon successful completion of the copy command, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-        `{"last_successful_step": "2.4_code_styleguides"}`
 
 ### 2.5 Select Workflow (Interactive)
 1.  **Copy Initial Workflow:**
@@ -334,8 +328,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
             -   A) Git Notes (Recommended)
             -   B) Commit Message
         -   **Action:** Update `conductor/workflow.md` based on the user's responses.
-    -   **Commit State:** After the `workflow.md` file is successfully copied or updated, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-        `{"last_successful_step": "2.5_workflow"}`
 
 ### 2.6 Finalization
 1.  **Generate Index File:**
@@ -462,8 +454,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
             - [Metadata](./metadata.json)
             ```
 
-    d. **Commit State:** After all track artifacts have been successfully written, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-       `{"last_successful_step": "3.3_initial_track_generated"}`
+    d.
 
     e. **Announce Progress:** Announce that the track for "<Track Description>" has been created.
 
@@ -484,8 +475,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
 ## 1.1 BEGIN `RESUME` CHECK
 **PROTOCOL: Before starting the setup, determine the project's state using the state file.**
 
-1.  **Read State File:** Check for the existence of `conductor/setup_state.json`.
-    - If it does not exist, this is a new project setup. Proceed directly to Step 1.2.
+1.    - If it does not exist, this is a new project setup. Proceed directly to Step 1.2.
     - If it exists, read its content.
 
 2.  **Resume Based on State:**
@@ -601,8 +591,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     -   **CRITICAL: You MUST NOT execute any tool calls until the user has provided a response.**
     -   **Upon receiving the user's response:**
         -   Execute `mkdir -p conductor`.
-        -   **Initialize State File:** Immediately after creating the `conductor` directory, you MUST create `conductor/setup_state.json` with the exact content:
-            `{"last_successful_step": ""}`
+        -   **Initialize State File:** Immediately after creating the `conductor` directory, you MUST create  with the exact content:
         -   **Initialize Metadata Log:** Immediately after creating the state file, you MUST create `conductor/metadata.json` as an empty file.
         -   **Seed the Product Guide:** Write the user's response into `conductor/product.md` under a header named `# Initial Concept`.
 
@@ -642,8 +631,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
         - Label: "Approve"
         - Label: "Edit"
 5.  **Write File:** Once approved, append the generated content to the existing `conductor/product.md` file, preserving the `# Initial Concept` section.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.1_product_guide"}`
+6.
 7.  **Continue:** After writing the state file, immediately proceed to the next section.
 
 ### 2.2 Generate Product Guidelines (Interactive)
@@ -677,8 +665,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
         - Label: "Approve"
         - Label: "Edit"
 5.  **Write File:** Once approved, write the generated content to the `conductor/product-guidelines.md` file.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.2_product_guidelines"}`
+6.
 7.  **Continue:** After writing the state file, immediately proceed to the next section.
 
 ### 2.3 Generate Tech Stack (Interactive)
@@ -720,8 +707,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
         - Label: "Approve"
         - Label: "Edit"
 5.  **Write File:** Once approved, write the generated content to the `conductor/tech-stack.md` file.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.3_tech_stack"}`
+6.
 7.  **Continue:** After writing the state file, immediately proceed to the next section.
 
 ### 2.4 Select Guides (Interactive)
@@ -757,8 +743,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
                 - Label: "Add More"
             - **Handle Selection:** If the user chooses "Add More", present the full list using `ask_user` tool with `multiSelect: true`.
     -   **Action:** Construct and execute a command to create the directory and copy all selected files. For example: `mkdir -p conductor/code_styleguides && cp ~/.gemini/extensions/conductor/templates/code_styleguides/python.md ~/.gemini/extensions/conductor/templates/code_styleguides/javascript.md conductor/code_styleguides/`
-    -   **Commit State:** Upon successful completion of the copy command, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-        `{"last_successful_step": "2.4_code_styleguides"}`
 
 ### 2.5 Select Workflow (Interactive)
 1.  **Copy Initial Workflow:**
@@ -799,8 +783,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
                 - Label: "Git Notes"
                 - Label: "Commits"
         -   **Action:** Update `conductor/workflow.md` based on the user's responses.
-    -   **Commit State:** After the `workflow.md` file is successfully copied or updated, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-        `{"last_successful_step": "2.5_workflow"}`
 
 ### 2.6 Finalization
 1.  **Generate Index File:**
@@ -928,8 +910,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
             - [Metadata](./metadata.json)
             ```
 
-    d. **Commit State:** After all track artifacts have been successfully written, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-       `{"last_successful_step": "3.3_initial_track_generated"}`
+    d.
 
     e. **Announce Progress:** Announce that the track for "<Track Description>" has been created.
 
@@ -947,8 +928,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
             "conductor/index.md",
             "conductor/tracks.md",
             "conductor/tracks/",
-            "conductor/code_styleguides/",
-            "conductor/setup_state.json"
+            "conductor/code_styleguides/"
         ]
 3.  **Next Steps:** Inform the user that they can now begin work by running `/conductor:implement`.
 
