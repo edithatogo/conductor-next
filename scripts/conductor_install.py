@@ -299,7 +299,7 @@ class ConductorInstaller:
                 self.log(f"   • {comp}", Colors.GREEN)
 
         if self.skipped:
-            self.log(f"\n⏭️  Skipped ({len(self.skipped)}):", Colors.YELLOW)
+            self.log(f"\n[SKIP]  Skipped ({len(self.skipped)}):", Colors.YELLOW)
             for comp in self.skipped:
                 self.log(f"   • {comp}", Colors.YELLOW)
 

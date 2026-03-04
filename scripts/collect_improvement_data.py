@@ -297,14 +297,14 @@ def main():
     output_dir = args.output or (Path(".conductor") / "improvement-data")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("🚀 Starting improvement data collection...")
+    print("[READY] Starting improvement data collection...")
     print(f"Repository: {args.repo}")
     print(f"Output directory: {output_dir}")
     print()
 
     # Check GitHub CLI
     if not check_gh_installed():
-        print("⚠️  Warning: GitHub CLI (gh) not installed or not authenticated.")
+        print("[WARNING]  Warning: GitHub CLI (gh) not installed or not authenticated.")
         print("   Install: https://cli.github.com/")
         print("   Authenticate: gh auth login")
         print()
@@ -318,29 +318,29 @@ def main():
         # Collect PRs
         prs_file = output_dir / "prs.json"
         stats["prs"] = collect_prs(args.repo, prs_file)
-        print(f"  ✅ Collected {stats['prs']['open_total']} PRs")
+        print(f"  [OK] Collected {stats['prs']['open_total']} PRs")
 
         # Collect issues
         issues_file = output_dir / "issues.json"
         stats["issues"] = collect_issues(args.repo, issues_file)
-        print(f"  ✅ Collected {stats['issues']['open_total']} issues")
+        print(f"  [OK] Collected {stats['issues']['open_total']} issues")
 
         # Collect security data
         if not args.no_security:
             security_file = output_dir / "security.json"
             stats["security"] = collect_security_data(security_file)
-            print("  ✅ Security scans complete")
+            print("  [OK] Security scans complete")
         else:
-            print("  ⏭️  Skipping security scans (--no-security)")
+            print("  [SKIP]  Skipping security scans (--no-security)")
             stats["security"] = {}
 
         # Generate summary
         summary_file = output_dir / "SUMMARY.md"
         generate_summary(stats, summary_file)
-        print("  ✅ Summary generated")
+        print("  [OK] Summary generated")
 
         print()
-        print("📊 Collection Summary:")
+        print("[SUMMARY] Collection Summary:")
         print(f"   PRs: {stats['prs']['open_total']} open ({stats['prs']['dependabot']} Dependabot)")
         print(f"   Issues: {stats['issues']['open_total']} open ({stats['issues']['high_priority']} high priority)")
         if not args.no_security:
@@ -348,10 +348,10 @@ def main():
                 f"   Security: {stats['security'].get('npm_vulnerabilities', 0)} NPM, {stats['security'].get('python_vulnerabilities', 0)} Python vulnerabilities"
             )
         print()
-        print(f"✅ Data collection complete! Review: {output_dir / 'SUMMARY.md'}")
+        print(f"[OK] Data collection complete! Review: {output_dir / 'SUMMARY.md'}")
 
     except Exception as e:
-        print(f"\n❌ Error during collection: {e}", file=sys.stderr)
+        print(f"\n[ERROR] Error during collection: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
 

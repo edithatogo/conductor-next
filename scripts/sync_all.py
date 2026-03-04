@@ -13,20 +13,20 @@ def main():
     print("--- Phase 1: Synchronizing Global & Platform Skills ---")
     try:
         sync_skills()
-        print("✅ Skills synchronized successfully.")
+        print("[OK] Skills synchronized successfully.")
     except Exception as e:
-        print(f"❌ Error synchronizing skills: {e}")
+        print(f"[ERROR] Error synchronizing skills: {e}")
         return 1
 
     print("\n--- Phase 2: Synchronizing Repository-Local Platform Files ---")
     try:
         sync_platforms()
-        print("✅ Platform files synchronized successfully.")
+        print("[OK] Platform files synchronized successfully.")
     except Exception as e:
-        print(f"❌ Error synchronizing platform files: {e}")
+        print(f"[ERROR] Error synchronizing platform files: {e}")
         return 1
 
-    print("\n🎉 Conductor Synchronization Complete!")
+    print("\n[SUCCESS] Conductor Synchronization Complete!")
     return 0
 
 if __name__ == "__main__":

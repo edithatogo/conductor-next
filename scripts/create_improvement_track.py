@@ -391,14 +391,14 @@ def main():
 
     args = parser.parse_args()
 
-    print("📋 Creating improvement track...")
+    print("[TASK] Creating improvement track...")
     print(f"Data directory: {args.data}")
     print(f"Output directory: {args.output}")
     print()
 
     # Check data directory
     if not args.data.exists():
-        print(f"❌ Error: Data directory not found: {args.data}")
+        print(f"[ERROR] Error: Data directory not found: {args.data}")
         print("   Run 'python scripts/collect_improvement_data.py' first")
         sys.exit(1)
 
@@ -407,12 +407,12 @@ def main():
     data = load_data(args.data)
 
     if not data:
-        print(f"❌ Error: No data found in {args.data}")
+        print(f"[ERROR] Error: No data found in {args.data}")
         sys.exit(1)
 
-    print(f"  ✅ Loaded PRs: {len(data.get('prs', {}).get('open', []))} open")
-    print(f"  ✅ Loaded Issues: {len(data.get('issues', {}).get('open', []))} open")
-    print(f"  ✅ Loaded Security: {'Yes' if 'security' in data else 'No'}")
+    print(f"  [OK] Loaded PRs: {len(data.get('prs', {}).get('open', []))} open")
+    print(f"  [OK] Loaded Issues: {len(data.get('issues', {}).get('open', []))} open")
+    print(f"  [OK] Loaded Security: {'Yes' if 'security' in data else 'No'}")
     print()
 
     # Prioritize tasks
@@ -432,20 +432,20 @@ def main():
     print("Generating track specification and plan...")
     track_dir = generate_track_spec(tasks, args.output)
 
-    print(f"  ✅ Track created: {track_dir}")
+    print(f"  [OK] Track created: {track_dir}")
     print("     - spec.md")
     print("     - plan.md")
     print()
 
     # Summary
     total_tasks = sum(len(v) for v in tasks.values())
-    print("📊 Track Summary:")
+    print("[SUMMARY] Track Summary:")
     print(f"   Track ID: improvement_{datetime.now().strftime('%Y%m%d')}")
     print(f"   Total tasks: {total_tasks}")
     print("   Priority: P1-High")
     print("   Estimated duration: 1-2 weeks")
     print()
-    print("✅ Track creation complete!")
+    print("[OK] Track creation complete!")
     print("   Start implementation: /conductor:implement")
     print(f"   Or review: /conductor:review {track_dir.name}")
 

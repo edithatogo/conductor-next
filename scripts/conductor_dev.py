@@ -43,10 +43,10 @@ def verify(require_vsix):
         res = subprocess.run(cmd, env=env, check=False)
         if res.returncode != 0:
             all_passed = False
-            print(f"❌ Failed: {' '.join(cmd)}")
+            print(f"[ERROR] Failed: {' '.join(cmd)}")
     
     if all_passed:
-        print("✅ All verifications passed.")
+        print("[OK] All verifications passed.")
         sys.exit(0)
     else:
         sys.exit(1)
@@ -65,7 +65,7 @@ def build():
     vsix_script = "scripts/build_vsix.ps1" if os.name == "nt" else "scripts/build_vsix.sh"
     subprocess.run(["powershell" if os.name == "nt" else "bash", vsix_script], check=True)
     
-    print("✅ Build complete.")
+    print("[OK] Build complete.")
 
 @cli.command()
 def doctor():
@@ -85,17 +85,17 @@ def doctor():
     all_ok = True
     for name, path in checks.items():
         if path.exists():
-            print(f"✅ {name}: Found")
+            print(f"[OK] {name}: Found")
         else:
-            print(f"❌ {name}: Missing ({path})")
+            print(f"[ERROR] {name}: Missing ({path})")
             all_ok = False
             
     # Check dependencies
     try:
         import jinja2
-        print(f"✅ jinja2: {jinja2.__version__}")
+        print(f"[OK] jinja2: {jinja2.__version__}")
     except ImportError:
-        print("❌ jinja2: Not installed")
+        print("[ERROR] jinja2: Not installed")
         all_ok = False
         
     if all_ok:

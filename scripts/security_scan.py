@@ -197,7 +197,7 @@ def generate_report(
             if npm_results:
                 f.write("## NPM Audits\n\n")
                 for dir, result in npm_results.items():
-                    status = "❌" if result.get("has_vulnerabilities") else "✅"
+                    status = "[ERROR]" if result.get("has_vulnerabilities") else "[OK]"
                     vulns = result.get("vulnerabilities", 0)
                     f.write(f"### {dir} {status}\n\n")
                     f.write(f"Vulnerabilities: {vulns}\n\n")
@@ -270,7 +270,7 @@ def main():
 
     root_dir = Path(__file__).parent.parent
 
-    print("🔒 Starting security scan...")
+    print("[SECURITY] Starting security scan...")
     print(f"Output: {output_file}")
     print()
 
@@ -285,7 +285,7 @@ def main():
             print(f"  Scanning {npm_dir}...")
             npm_results[npm_dir] = npm_audit(npm_path)
             vulns = npm_results[npm_dir].get("vulnerabilities", 0)
-            status = "❌" if vulns > 0 else "✅"
+            status = "[ERROR]" if vulns > 0 else "[OK]"
             print(f"    {status} {vulns} vulnerabilities")
 
     # Python safety
@@ -295,7 +295,7 @@ def main():
         vulns = len(python_results)
     else:
         vulns = 0
-    status = "❌" if vulns > 0 else "✅"
+    status = "[ERROR]" if vulns > 0 else "[OK]"
     print(f"  {status} {vulns} vulnerabilities")
 
     # Bandit scan
@@ -306,32 +306,32 @@ def main():
         for dir, result in bandit_results.items():
             if isinstance(result, dict) and "error" not in result:
                 issues = result.get("issues", 0)
-                status = "❌" if issues > 0 else "✅"
+                status = "[ERROR]" if issues > 0 else "[OK]"
                 print(f"  {status} {dir}: {issues} issues")
     else:
-        print("\n⏭️  Skipping Bandit scan (--no-bandit)")
+        print("\n[SKIP]  Skipping Bandit scan (--no-bandit)")
 
     # Generate report
     print("\nGenerating report...")
     report = generate_report(npm_results, python_results, bandit_results, output_file, args.format)
 
     # Summary
-    print("\n📊 Security Scan Summary:")
+    print("\n[SUMMARY] Security Scan Summary:")
     print(f"   NPM: {report['summary']['total_npm_vulnerabilities']} vulnerabilities")
     print(f"   Python: {report['summary']['total_python_vulnerabilities']} vulnerabilities")
     print(f"   Bandit: {report['summary']['total_bandit_issues']} issues")
-    print(f"\n✅ Security scan complete! Report: {output_file}")
+    print(f"\n[OK] Security scan complete! Report: {output_file}")
 
     # Exit with error if vulnerabilities found
     total_vulns = report["summary"]["total_npm_vulnerabilities"] + report["summary"]["total_python_vulnerabilities"]
 
     if total_vulns > 0:
-        print(f"\n⚠️  {total_vulns} security vulnerabilities detected!")
+        print(f"\n[WARNING]  {total_vulns} security vulnerabilities detected!")
         if args.format == "json":
             print(f"   Review: {output_file}")
         sys.exit(1)
     else:
-        print("\n✅ No security vulnerabilities detected!")
+        print("\n[OK] No security vulnerabilities detected!")
 
 
 if __name__ == "__main__":
