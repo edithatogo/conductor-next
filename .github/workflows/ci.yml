@@ -40,6 +40,11 @@ jobs:
           channels: conda-forge,defaults
           auto-activate-base: false
 
+      - name: Install Python packages
+        shell: bash -l {0}
+        run: |
+          pip install -e conductor-core -e conductor-gemini
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
