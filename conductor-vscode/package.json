@@ -112,7 +112,6 @@
     "out/**",
     "media/**",
     "skills/**",
-    "package.json",
-    "LICENSE"
+    "package.json"
   ]
 }
