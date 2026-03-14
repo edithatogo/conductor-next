@@ -161,8 +161,8 @@ jobs:
           PY
           )
           TRACK_NAME=$(basename "$TRACK_DIR")
-          echo "track_name=$TRACK_NAME" >> $GITHUB_OUTPUT
-          echo "track_dir=$TRACK_DIR" >> $GITHUB_OUTPUT
+          echo "track_name=$TRACK_NAME" >> "$GITHUB_OUTPUT"
+          echo "track_dir=$TRACK_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Configure Git
         run: |

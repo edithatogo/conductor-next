@@ -43,8 +43,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STEPS_RELEASE_OUTPUTS_TAG_NAME: ${{ steps.release.outputs.tag_name }}
         run: |
           gh release upload \
-            ${STEPS_RELEASE_OUTPUTS_TAG_NAME} \
+            "${{ steps.release.outputs.tag_name }}" \
             conductor-release.tar.gz
