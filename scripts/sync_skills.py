@@ -94,6 +94,7 @@ def _perform_sync(target_base_dir: Path, skills: Iterable[dict], *, flat: bool =
             target_file = skill_dir / "SKILL.md"
 
         # Write bytes to avoid platform newline translation (Qwen requires LF-only frontmatter).
+        target_file.parent.mkdir(parents=True, exist_ok=True)
         target_file.write_bytes(content.encode("utf-8"))
 
 
