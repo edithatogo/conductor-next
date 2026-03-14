@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import importlib
 import re
+import sys
 from pathlib import Path
+from typing import Any, cast
 
-try:
-    import tomllib as _toml
-except ModuleNotFoundError:  # pragma: no cover - Python <3.11
-    import tomli as _toml
+_toml = cast(Any, importlib.import_module("tomllib" if sys.version_info >= (3, 11) else "tomli"))
 
 from .prompts import PromptProvider
 
@@ -55,8 +55,6 @@ class ValidationService:
         if md_content == core_prompt:
             return True, "Matches core template"
 
-        # Claude files might have frontmatter or extra headers
-        # For now, we assume exact match or look for the protocol headers
         if core_prompt in md_content:
             return True, "Core protocol found in file"
 
@@ -87,7 +85,6 @@ class ValidationService:
         """
         Overwrites a Claude Markdown file with the core template content.
         """
-        # For now, we overwrite the entire file as these are strictly prompt files
         core_prompt = self.provider.get_template_text(template_name).strip()
 
         path = Path(md_path)
