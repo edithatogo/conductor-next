@@ -106,7 +106,7 @@
     "@types/vscode": "^1.75.0",
     "@types/node": "16.x",
     "typescript": "^4.9.5",
-    "@vscode/vsce": "^2.15.0"
+    "@vscode/vsce": "^3.7.1"
   },
   "files": [
     "out/**",
