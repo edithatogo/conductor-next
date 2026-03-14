@@ -95,7 +95,7 @@ def _perform_sync(target_base_dir: Path, skills: Iterable[dict], *, flat: bool =
 
         # Write LF-only text so frontmatter stays portable across platforms.
         target_file.parent.mkdir(parents=True, exist_ok=True)
-        with target_file.open("w", encoding="utf-8", newline="\n") as handle:
+        with open(target_file, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(content)
 
 
