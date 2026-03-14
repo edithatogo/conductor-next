@@ -1,17 +1,927 @@
 {
   "npm_audits": {
     "mcp-server": {
-      "error": "[WinError 2] The system cannot find the file specified"
+      "auditReportVersion": 2,
+      "vulnerabilities": {
+        "@hono/node-server": {
+          "name": "@hono/node-server",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1114170,
+              "name": "@hono/node-server",
+              "dependency": "@hono/node-server",
+              "title": "@hono/node-server has authorization bypass for protected static paths via encoded slashes in Serve Static Middleware",
+              "url": "https://github.com/advisories/GHSA-wc8c-qw6v-h7f6",
+              "severity": "high",
+              "cwe": [
+                "CWE-863"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+              },
+              "range": "<1.19.10"
+            }
+          ],
+          "effects": [],
+          "range": "<1.19.10",
+          "nodes": [
+            "node_modules/@hono/node-server"
+          ],
+          "fixAvailable": true
+        },
+        "@modelcontextprotocol/sdk": {
+          "name": "@modelcontextprotocol/sdk",
+          "severity": "high",
+          "isDirect": true,
+          "via": [
+            {
+              "source": 1113080,
+              "name": "@modelcontextprotocol/sdk",
+              "dependency": "@modelcontextprotocol/sdk",
+              "title": "@modelcontextprotocol/sdk has cross-client data leak via shared server/transport instance reuse",
+              "url": "https://github.com/advisories/GHSA-345p-7cg4-v4c7",
+              "severity": "high",
+              "cwe": [
+                "CWE-362"
+              ],
+              "cvss": {
+                "score": 7.1,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:L/A:N"
+              },
+              "range": ">=1.10.0 <=1.25.3"
+            }
+          ],
+          "effects": [],
+          "range": "1.10.0 - 1.25.3",
+          "nodes": [
+            "node_modules/@modelcontextprotocol/sdk"
+          ],
+          "fixAvailable": true
+        },
+        "ajv": {
+          "name": "ajv",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113715,
+              "name": "ajv",
+              "dependency": "ajv",
+              "title": "ajv has ReDoS when using `$data` option",
+              "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-400",
+                "CWE-1333"
+              ],
+              "cvss": {
+                "score": 0,
+                "vectorString": null
+              },
+              "range": ">=7.0.0-alpha.0 <8.18.0"
+            }
+          ],
+          "effects": [],
+          "range": "7.0.0-alpha.0 - 8.17.1",
+          "nodes": [
+            "node_modules/ajv"
+          ],
+          "fixAvailable": true
+        },
+        "hono": {
+          "name": "hono",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113311,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono added timing comparison hardening in basicAuth and bearerAuth",
+              "url": "https://github.com/advisories/GHSA-gq3j-xvxp-8hrf",
+              "severity": "low",
+              "cwe": [
+                "CWE-208"
+              ],
+              "cvss": {
+                "score": 3.7,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N"
+              },
+              "range": "<4.11.10"
+            },
+            {
+              "source": 1114004,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono Vulnerable to Cookie Attribute Injection via Unsanitized domain and path in setCookie()",
+              "url": "https://github.com/advisories/GHSA-5pq2-9x2x-5p6w",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-113",
+                "CWE-1113"
+              ],
+              "cvss": {
+                "score": 5.4,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N"
+              },
+              "range": "<4.12.4"
+            },
+            {
+              "source": 1114005,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono Vulnerable to SSE Control Field Injection via CR/LF in writeSSE()",
+              "url": "https://github.com/advisories/GHSA-p6xx-57qc-3wxr",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-74"
+              ],
+              "cvss": {
+                "score": 6.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+              },
+              "range": "<4.12.4"
+            },
+            {
+              "source": 1114006,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono vulnerable to arbitrary file access via serveStatic vulnerability ",
+              "url": "https://github.com/advisories/GHSA-q5qw-h33p-qvwr",
+              "severity": "high",
+              "cwe": [
+                "CWE-177"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+              },
+              "range": "<4.12.4"
+            },
+            {
+              "source": 1114341,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono vulnerable to Prototype Pollution possible through __proto__ key allowed in parseBody({ dot: true })",
+              "url": "https://github.com/advisories/GHSA-v8w9-8mx6-g223",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-1321"
+              ],
+              "cvss": {
+                "score": 4.8,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N"
+              },
+              "range": "<4.12.7"
+            }
+          ],
+          "effects": [],
+          "range": "<=4.12.6",
+          "nodes": [
+            "node_modules/hono"
+          ],
+          "fixAvailable": true
+        },
+        "qs": {
+          "name": "qs",
+          "severity": "low",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113161,
+              "name": "qs",
+              "dependency": "qs",
+              "title": "qs's arrayLimit bypass in comma parsing allows denial of service",
+              "url": "https://github.com/advisories/GHSA-w7fw-mjwx-w883",
+              "severity": "low",
+              "cwe": [
+                "CWE-20"
+              ],
+              "cvss": {
+                "score": 3.7,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+              },
+              "range": ">=6.7.0 <=6.14.1"
+            }
+          ],
+          "effects": [],
+          "range": "6.7.0 - 6.14.1",
+          "nodes": [
+            "node_modules/qs"
+          ],
+          "fixAvailable": true
+        },
+        "rollup": {
+          "name": "rollup",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113515,
+              "name": "rollup",
+              "dependency": "rollup",
+              "title": "Rollup 4 has Arbitrary File Write via Path Traversal",
+              "url": "https://github.com/advisories/GHSA-mw96-cpmx-2vgc",
+              "severity": "high",
+              "cwe": [
+                "CWE-22"
+              ],
+              "cvss": {
+                "score": 0,
+                "vectorString": null
+              },
+              "range": ">=4.0.0 <4.59.0"
+            }
+          ],
+          "effects": [],
+          "range": "4.0.0 - 4.58.0",
+          "nodes": [
+            "node_modules/rollup"
+          ],
+          "fixAvailable": true
+        }
+      },
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 1,
+          "moderate": 1,
+          "high": 4,
+          "critical": 0,
+          "total": 6
+        },
+        "dependencies": {
+          "prod": 88,
+          "dev": 101,
+          "optional": 52,
+          "peer": 6,
+          "peerOptional": 0,
+          "total": 191
+        }
+      }
     },
     "conductor-vscode": {
-      "error": "[WinError 2] The system cannot find the file specified"
+      "auditReportVersion": 2,
+      "vulnerabilities": {
+        "@vscode/vsce": {
+          "name": "@vscode/vsce",
+          "severity": "moderate",
+          "isDirect": true,
+          "via": [
+            "yauzl"
+          ],
+          "effects": [],
+          "range": "*",
+          "nodes": [
+            "node_modules/@vscode/vsce"
+          ],
+          "fixAvailable": false
+        },
+        "minimatch": {
+          "name": "minimatch",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113459,
+              "name": "minimatch",
+              "dependency": "minimatch",
+              "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+              "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+              "severity": "high",
+              "cwe": [
+                "CWE-1333"
+              ],
+              "cvss": {
+                "score": 0,
+                "vectorString": null
+              },
+              "range": "<3.1.3"
+            },
+            {
+              "source": 1113538,
+              "name": "minimatch",
+              "dependency": "minimatch",
+              "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+              "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+              "severity": "high",
+              "cwe": [
+                "CWE-407"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": "<3.1.3"
+            },
+            {
+              "source": 1113546,
+              "name": "minimatch",
+              "dependency": "minimatch",
+              "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+              "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+              "severity": "high",
+              "cwe": [
+                "CWE-1333"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": "<3.1.4"
+            }
+          ],
+          "effects": [],
+          "range": "<=3.1.3",
+          "nodes": [
+            "node_modules/minimatch"
+          ],
+          "fixAvailable": true
+        },
+        "qs": {
+          "name": "qs",
+          "severity": "low",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113161,
+              "name": "qs",
+              "dependency": "qs",
+              "title": "qs's arrayLimit bypass in comma parsing allows denial of service",
+              "url": "https://github.com/advisories/GHSA-w7fw-mjwx-w883",
+              "severity": "low",
+              "cwe": [
+                "CWE-20"
+              ],
+              "cvss": {
+                "score": 3.7,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+              },
+              "range": ">=6.7.0 <=6.14.1"
+            }
+          ],
+          "effects": [],
+          "range": "6.7.0 - 6.14.1",
+          "nodes": [
+            "node_modules/qs"
+          ],
+          "fixAvailable": true
+        },
+        "underscore": {
+          "name": "underscore",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113950,
+              "name": "underscore",
+              "dependency": "underscore",
+              "title": "Underscore has unlimited recursion in _.flatten and _.isEqual, potential for DoS attack",
+              "url": "https://github.com/advisories/GHSA-qpx9-hpmf-5gmw",
+              "severity": "high",
+              "cwe": [
+                "CWE-674",
+                "CWE-770"
+              ],
+              "cvss": {
+                "score": 0,
+                "vectorString": null
+              },
+              "range": "<=1.13.7"
+            }
+          ],
+          "effects": [],
+          "range": "<=1.13.7",
+          "nodes": [
+            "node_modules/underscore"
+          ],
+          "fixAvailable": true
+        },
+        "undici": {
+          "name": "undici",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1112497,
+              "name": "undici",
+              "dependency": "undici",
+              "title": "Undici has an unbounded decompression chain in HTTP responses on Node.js Fetch API via Content-Encoding leads to resource exhaustion",
+              "url": "https://github.com/advisories/GHSA-g9mf-h72j-4rw9",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-770"
+              ],
+              "cvss": {
+                "score": 5.9,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": ">=7.0.0 <7.18.2"
+            },
+            {
+              "source": 1114591,
+              "name": "undici",
+              "dependency": "undici",
+              "title": "Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client",
+              "url": "https://github.com/advisories/GHSA-f269-vfmq-vjvj",
+              "severity": "high",
+              "cwe": [
+                "CWE-248",
+                "CWE-1284"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": ">=7.0.0 <7.24.0"
+            },
+            {
+              "source": 1114593,
+              "name": "undici",
+              "dependency": "undici",
+              "title": "Undici has an HTTP Request/Response Smuggling issue",
+              "url": "https://github.com/advisories/GHSA-2mjp-6q6p-2qxm",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-444"
+              ],
+              "cvss": {
+                "score": 6.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+              },
+              "range": ">=7.0.0 <7.24.0"
+            },
+            {
+              "source": 1114637,
+              "name": "undici",
+              "dependency": "undici",
+              "title": "Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression",
+              "url": "https://github.com/advisories/GHSA-vrm6-8vpv-qv8q",
+              "severity": "high",
+              "cwe": [
+                "CWE-409"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": ">=7.0.0 <7.24.0"
+            },
+            {
+              "source": 1114639,
+              "name": "undici",
+              "dependency": "undici",
+              "title": "Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation",
+              "url": "https://github.com/advisories/GHSA-v9p9-hfj2-hcw8",
+              "severity": "high",
+              "cwe": [
+                "CWE-248"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              },
+              "range": ">=7.0.0 <7.24.0"
+            },
+            {
+              "source": 1114641,
+              "name": "undici",
+              "dependency": "undici",
+              "title": "Undici has CRLF Injection in undici via `upgrade` option",
+              "url": "https://github.com/advisories/GHSA-4992-7rv2-5pvq",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-93"
+              ],
+              "cvss": {
+                "score": 4.6,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:N"
+              },
+              "range": ">=7.0.0 <7.24.0"
+            }
+          ],
+          "effects": [],
+          "range": "7.0.0 - 7.23.0",
+          "nodes": [
+            "node_modules/undici"
+          ],
+          "fixAvailable": true
+        },
+        "yauzl": {
+          "name": "yauzl",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1114530,
+              "name": "yauzl",
+              "dependency": "yauzl",
+              "title": "yauzl contains an off-by-one error",
+              "url": "https://github.com/advisories/GHSA-gmq8-994r-jv83",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-193"
+              ],
+              "cvss": {
+                "score": 5.3,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+              },
+              "range": "<3.2.1"
+            }
+          ],
+          "effects": [
+            "@vscode/vsce"
+          ],
+          "range": "<3.2.1",
+          "nodes": [
+            "node_modules/yauzl"
+          ],
+          "fixAvailable": false
+        }
+      },
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 1,
+          "moderate": 2,
+          "high": 3,
+          "critical": 0,
+          "total": 6
+        },
+        "dependencies": {
+          "prod": 1,
+          "dev": 189,
+          "optional": 41,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 189
+        }
+      }
     },
     "mcp": {
-      "error": "[WinError 2] The system cannot find the file specified"
+      "auditReportVersion": 2,
+      "vulnerabilities": {
+        "@hono/node-server": {
+          "name": "@hono/node-server",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1114170,
+              "name": "@hono/node-server",
+              "dependency": "@hono/node-server",
+              "title": "@hono/node-server has authorization bypass for protected static paths via encoded slashes in Serve Static Middleware",
+              "url": "https://github.com/advisories/GHSA-wc8c-qw6v-h7f6",
+              "severity": "high",
+              "cwe": [
+                "CWE-863"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+              },
+              "range": "<1.19.10"
+            }
+          ],
+          "effects": [],
+          "range": "<1.19.10",
+          "nodes": [
+            "node_modules/@hono/node-server"
+          ],
+          "fixAvailable": true
+        },
+        "@modelcontextprotocol/sdk": {
+          "name": "@modelcontextprotocol/sdk",
+          "severity": "high",
+          "isDirect": true,
+          "via": [
+            {
+              "source": 1113080,
+              "name": "@modelcontextprotocol/sdk",
+              "dependency": "@modelcontextprotocol/sdk",
+              "title": "@modelcontextprotocol/sdk has cross-client data leak via shared server/transport instance reuse",
+              "url": "https://github.com/advisories/GHSA-345p-7cg4-v4c7",
+              "severity": "high",
+              "cwe": [
+                "CWE-362"
+              ],
+              "cvss": {
+                "score": 7.1,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:L/A:N"
+              },
+              "range": ">=1.10.0 <=1.25.3"
+            }
+          ],
+          "effects": [],
+          "range": "1.10.0 - 1.25.3",
+          "nodes": [
+            "node_modules/@modelcontextprotocol/sdk"
+          ],
+          "fixAvailable": true
+        },
+        "ajv": {
+          "name": "ajv",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113715,
+              "name": "ajv",
+              "dependency": "ajv",
+              "title": "ajv has ReDoS when using `$data` option",
+              "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-400",
+                "CWE-1333"
+              ],
+              "cvss": {
+                "score": 0,
+                "vectorString": null
+              },
+              "range": ">=7.0.0-alpha.0 <8.18.0"
+            }
+          ],
+          "effects": [],
+          "range": "7.0.0-alpha.0 - 8.17.1",
+          "nodes": [
+            "node_modules/ajv"
+          ],
+          "fixAvailable": true
+        },
+        "esbuild": {
+          "name": "esbuild",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1102341,
+              "name": "esbuild",
+              "dependency": "esbuild",
+              "title": "esbuild enables any website to send any requests to the development server and read the response",
+              "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-346"
+              ],
+              "cvss": {
+                "score": 5.3,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+              },
+              "range": "<=0.24.2"
+            }
+          ],
+          "effects": [
+            "vite"
+          ],
+          "range": "<=0.24.2",
+          "nodes": [
+            "node_modules/esbuild"
+          ],
+          "fixAvailable": {
+            "name": "vitest",
+            "version": "4.1.0",
+            "isSemVerMajor": true
+          }
+        },
+        "hono": {
+          "name": "hono",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113311,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono added timing comparison hardening in basicAuth and bearerAuth",
+              "url": "https://github.com/advisories/GHSA-gq3j-xvxp-8hrf",
+              "severity": "low",
+              "cwe": [
+                "CWE-208"
+              ],
+              "cvss": {
+                "score": 3.7,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N"
+              },
+              "range": "<4.11.10"
+            },
+            {
+              "source": 1114004,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono Vulnerable to Cookie Attribute Injection via Unsanitized domain and path in setCookie()",
+              "url": "https://github.com/advisories/GHSA-5pq2-9x2x-5p6w",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-113",
+                "CWE-1113"
+              ],
+              "cvss": {
+                "score": 5.4,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N"
+              },
+              "range": "<4.12.4"
+            },
+            {
+              "source": 1114005,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono Vulnerable to SSE Control Field Injection via CR/LF in writeSSE()",
+              "url": "https://github.com/advisories/GHSA-p6xx-57qc-3wxr",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-74"
+              ],
+              "cvss": {
+                "score": 6.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+              },
+              "range": "<4.12.4"
+            },
+            {
+              "source": 1114006,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono vulnerable to arbitrary file access via serveStatic vulnerability ",
+              "url": "https://github.com/advisories/GHSA-q5qw-h33p-qvwr",
+              "severity": "high",
+              "cwe": [
+                "CWE-177"
+              ],
+              "cvss": {
+                "score": 7.5,
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+              },
+              "range": "<4.12.4"
+            },
+            {
+              "source": 1114341,
+              "name": "hono",
+              "dependency": "hono",
+              "title": "Hono vulnerable to Prototype Pollution possible through __proto__ key allowed in parseBody({ dot: true })",
+              "url": "https://github.com/advisories/GHSA-v8w9-8mx6-g223",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-1321"
+              ],
+              "cvss": {
+                "score": 4.8,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N"
+              },
+              "range": "<4.12.7"
+            }
+          ],
+          "effects": [],
+          "range": "<=4.12.6",
+          "nodes": [
+            "node_modules/hono"
+          ],
+          "fixAvailable": true
+        },
+        "qs": {
+          "name": "qs",
+          "severity": "low",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113161,
+              "name": "qs",
+              "dependency": "qs",
+              "title": "qs's arrayLimit bypass in comma parsing allows denial of service",
+              "url": "https://github.com/advisories/GHSA-w7fw-mjwx-w883",
+              "severity": "low",
+              "cwe": [
+                "CWE-20"
+              ],
+              "cvss": {
+                "score": 3.7,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+              },
+              "range": ">=6.7.0 <=6.14.1"
+            }
+          ],
+          "effects": [],
+          "range": "6.7.0 - 6.14.1",
+          "nodes": [
+            "node_modules/qs"
+          ],
+          "fixAvailable": true
+        },
+        "rollup": {
+          "name": "rollup",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113515,
+              "name": "rollup",
+              "dependency": "rollup",
+              "title": "Rollup 4 has Arbitrary File Write via Path Traversal",
+              "url": "https://github.com/advisories/GHSA-mw96-cpmx-2vgc",
+              "severity": "high",
+              "cwe": [
+                "CWE-22"
+              ],
+              "cvss": {
+                "score": 0,
+                "vectorString": null
+              },
+              "range": ">=4.0.0 <4.59.0"
+            }
+          ],
+          "effects": [],
+          "range": "4.0.0 - 4.58.0",
+          "nodes": [
+            "node_modules/rollup"
+          ],
+          "fixAvailable": true
+        },
+        "vite": {
+          "name": "vite",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            "esbuild"
+          ],
+          "effects": [
+            "vite-node",
+            "vitest"
+          ],
+          "range": "0.11.0 - 6.1.6",
+          "nodes": [
+            "node_modules/vite"
+          ],
+          "fixAvailable": {
+            "name": "vitest",
+            "version": "4.1.0",
+            "isSemVerMajor": true
+          }
+        },
+        "vite-node": {
+          "name": "vite-node",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            "vite"
+          ],
+          "effects": [
+            "vitest"
+          ],
+          "range": "<=2.2.0-beta.2",
+          "nodes": [
+            "node_modules/vite-node"
+          ],
+          "fixAvailable": {
+            "name": "vitest",
+            "version": "4.1.0",
+            "isSemVerMajor": true
+          }
+        },
+        "vitest": {
+          "name": "vitest",
+          "severity": "moderate",
+          "isDirect": true,
+          "via": [
+            "vite",
+            "vite-node"
+          ],
+          "effects": [],
+          "range": "0.0.1 - 0.0.12 || 0.0.29 - 0.0.122 || 0.3.3 - 2.2.0-beta.2",
+          "nodes": [
+            "node_modules/vitest"
+          ],
+          "fixAvailable": {
+            "name": "vitest",
+            "version": "4.1.0",
+            "isSemVerMajor": true
+          }
+        }
+      },
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 1,
+          "moderate": 5,
+          "high": 4,
+          "critical": 0,
+          "total": 10
+        },
+        "dependencies": {
+          "prod": 90,
+          "dev": 106,
+          "optional": 49,
+          "peer": 1,
+          "peerOptional": 0,
+          "total": 196
+        }
+      }
     }
   },
   "python_safety": {
-    "error": "No Python security scanner available"
+    "error": "No requirements.txt found for pip-audit"
   },
-  "scanned_at": "2026-03-05T12:04:29.622723"
+  "scanned_at": "2026-03-14T00:50:20.360249"
 }
