@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Lint GitHub Actions workflows
         uses: rhysd/actionlint@v1
@@ -28,7 +28,7 @@ jobs:
         python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Mamba
         uses: conda-incubator/setup-miniconda@v3
@@ -41,7 +41,7 @@ jobs:
           auto-activate-base: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
