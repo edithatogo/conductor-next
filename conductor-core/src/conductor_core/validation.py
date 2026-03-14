@@ -4,9 +4,9 @@ import re
 from pathlib import Path
 
 try:
-    import tomllib
+    import tomllib as _toml
 except ModuleNotFoundError:  # pragma: no cover - Python <3.11
-    import tomli as tomllib
+    import tomli as _toml
 
 from .prompts import PromptProvider
 
@@ -24,8 +24,8 @@ class ValidationService:
             return False, f"File not found: {toml_path}"
 
         try:
-            parsed = tomllib.loads(path.read_text(encoding="utf-8"))
-        except tomllib.TOMLDecodeError as exc:
+            parsed = _toml.loads(path.read_text(encoding="utf-8"))
+        except _toml.TOMLDecodeError as exc:
             return False, f"Invalid TOML in {toml_path}: {exc}"
 
         toml_prompt = parsed.get("prompt")
