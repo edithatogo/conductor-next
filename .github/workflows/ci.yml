@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   workflow-lint:
     runs-on: ubuntu-latest
@@ -37,8 +40,9 @@ jobs:
           environment-file: environment.yml
           activate-environment: conductor
           mamba-version: "*"
-          channels: conda-forge,defaults
-          auto-activate-base: false
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-activate: false
 
       - name: Install Python packages
         shell: bash -l {0}
