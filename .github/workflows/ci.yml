@@ -33,20 +33,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Micromamba
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-name: conductor
-          environment-file: environment.yml
-          create-args: >-
-            python=${{ matrix.python-version }}
-          cache-environment: true
-          cache-downloads: true
+      - name: Install Micromamba and Create Environment
+        shell: bash
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
+        run: |
+          set -euo pipefail
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest             | tar -xvj -C "$RUNNER_TEMP" --strip-components=1 bin/micromamba
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+
+          src = Path("environment.yml").read_text()
+          rendered = re.sub(
+              r"(?m)^  - python.*$",
+              f"  - python=={os.environ['PYTHON_VERSION']}",
+              src,
+              count=1,
+          )
+          Path("environment-ci.yml").write_text(rendered)
+          PY
+          "$RUNNER_TEMP/micromamba" create -y -n conductor -f environment-ci.yml
 
       - name: Install Python packages
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          pip install -e conductor-core -e conductor-gemini
+          micromamba run -n conductor pip install -e conductor-core -e conductor-gemini
 
       - name: Configure Git identity for tests
         run: |
@@ -62,49 +76,46 @@ jobs:
         run: cd conductor-vscode && npm ci
 
       - name: Run Core Tests
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          cd conductor-core && pytest --cov=conductor_core --cov-report=xml
+          micromamba run -n conductor bash -lc "cd conductor-core && pytest --cov=conductor_core --cov-report=xml"
 
       - name: Run Gemini Tests
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          cd conductor-gemini && pytest --cov=conductor_gemini --cov-report=xml --cov-fail-under=99
+          micromamba run -n conductor bash -lc "cd conductor-gemini && pytest --cov=conductor_gemini --cov-report=xml --cov-fail-under=99"
 
       - name: Run VS Code Tests
         run: |
           cd conductor-vscode && npm test
 
       - name: Static Analysis (mypy)
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          cd conductor-core && mypy --strict \
-            src/conductor_core/models.py \
-            src/conductor_core/prompts.py \
-            src/conductor_core/validation.py
-          cd ../conductor-gemini && mypy src --disable-error-code no-untyped-def
+          micromamba run -n conductor bash -lc "cd conductor-core && mypy --strict src/conductor_core/models.py src/conductor_core/prompts.py src/conductor_core/validation.py"
+          micromamba run -n conductor bash -lc "cd conductor-gemini && mypy src --disable-error-code no-untyped-def"
 
       - name: Run Smoke Test
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          python scripts/smoke_test.py
+          micromamba run -n conductor python scripts/smoke_test.py
 
       - name: Build Core
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          ./scripts/build_core.sh
+          micromamba run -n conductor bash -lc "./scripts/build_core.sh"
 
       - name: Build VS Code Extension
         run: |
           ./scripts/build_vsix.sh
 
       - name: Prepare Generated Artifacts
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
-          python scripts/validate_conductor_assets.py --sync
-          CONDUCTOR_SYNC_REPO_ONLY=1 CONDUCTOR_ANTIGRAVITY_SKILLS=1 python scripts/sync_skills.py
+          micromamba run -n conductor python scripts/validate_conductor_assets.py --sync
+          micromamba run -n conductor env CONDUCTOR_SYNC_REPO_ONLY=1 CONDUCTOR_ANTIGRAVITY_SKILLS=1 python scripts/sync_skills.py
 
       - name: Validate Artifacts
-        shell: micromamba-shell {0}
+        shell: bash
         run: |
           python scripts/conductor_dev.py verify --require-vsix
