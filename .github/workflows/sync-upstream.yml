@@ -54,22 +54,22 @@ jobs:
           echo "Running upstream sync..."
           
           # Build arguments
-          ARGS="--target edithatogo/conductor-next"
+          ARGS=(--target edithatogo/conductor-next)
           
           if [ -n "${{ github.event.inputs.upstream }}" ]; then
-            ARGS="$ARGS --upstream ${{ github.event.inputs.upstream }}"
+            ARGS+=(--upstream "${{ github.event.inputs.upstream }}")
           fi
           
           if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
-            ARGS="$ARGS --dry-run"
+            ARGS+=(--dry-run)
           fi
 
           if [ "${{ github.event_name }}" == "schedule" ] || [ "${{ github.event.inputs.create_pr }}" == "true" ]; then
-            ARGS="$ARGS --create-pr"
+            ARGS+=(--create-pr)
           fi
           
           # Run sync
-          python scripts/sync_upstream.py $ARGS --branch next
+          python scripts/sync_upstream.py "${ARGS[@]}" --branch next
           
       - name: Upload sync state
         if: always()
@@ -82,25 +82,41 @@ jobs:
       - name: Generate sync report
         if: always()
         run: |
-          echo "# Upstream Sync Report" > sync-report.md
-          echo "" >> sync-report.md
-          echo "Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> sync-report.md
-          echo "" >> sync-report.md
-          
+          generated_at=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
           if [ -f .github/sync_state.json ]; then
-            echo "## Sync State" >> sync-report.md
-            echo "" >> sync-report.md
-            echo '```json' >> sync-report.md
+            cat <<EOF > sync-report.md
+          # Upstream Sync Report
+
+          Generated: ${generated_at}
+
+          ## Sync State
+
+          ```json
+          EOF
             cat .github/sync_state.json >> sync-report.md
-            echo '```' >> sync-report.md
+            cat <<EOF >> sync-report.md
+          ```
+
+          ## Workflow Run
+
+          - Run ID: ${{ github.run_id }}
+          - Run Number: ${{ github.run_number }}
+          - Trigger: ${{ github.event_name }}
+          EOF
+          else
+            cat <<EOF > sync-report.md
+          # Upstream Sync Report
+
+          Generated: ${generated_at}
+
+          ## Workflow Run
+
+          - Run ID: ${{ github.run_id }}
+          - Run Number: ${{ github.run_number }}
+          - Trigger: ${{ github.event_name }}
+          EOF
           fi
-          
-          echo "" >> sync-report.md
-          echo "## Workflow Run" >> sync-report.md
-          echo "" >> sync-report.md
-          echo "- Run ID: ${{ github.run_id }}" >> sync-report.md
-          echo "- Run Number: ${{ github.run_number }}" >> sync-report.md
-          echo "- Trigger: ${{ github.event_name }}" >> sync-report.md
           
       - name: Upload sync report
         if: always()

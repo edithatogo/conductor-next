@@ -59,7 +59,7 @@ jobs:
       - name: Find and validate Mermaid files
         run: |
           echo "Checking Mermaid diagram files..."
-          find . \( -name "*.mmd" -o -name "*.mermaid" \) | while read file; do
+          find . \( -name "*.mmd" -o -name "*.mermaid" \) | while read -r file; do
             echo "Validating: $file"
             mmdc -i "$file" -o /dev/null || exit 1
           done
@@ -84,27 +84,10 @@ jobs:
       - name: Validate CSL-JSON files
         run: |
           echo "Checking CSL-JSON reference files..."
-          find . \( -name "references.json" -o -name "*.csl.json" \) | while read file; do
+          find . \( -name "references.json" -o -name "*.csl.json" \) | while read -r file; do
             if [ -f "$file" ]; then
               echo "Validating: $file"
-              python - "$file" <<'PY'
-              import json
-              import sys
-
-              path = sys.argv[1]
-              with open(path, encoding="utf-8") as handle:
-                  try:
-                      data = json.load(handle)
-                  except json.JSONDecodeError as exc:
-                      print(f"Error: {path} is invalid JSON: {exc}")
-                      sys.exit(1)
-
-              if "references" not in data:
-                  print(f"Error: {path} missing references array")
-                  sys.exit(1)
-
-              print(f"✓ {path} is valid JSON with {len(data.get('references', []))} references")
-              PY
+              python -c "import json,sys; path=sys.argv[1]; data=json.load(open(path, encoding='utf-8')); 'references' in data or (_ for _ in ()).throw(SystemExit(f'Error: {path} missing references array')); print(f'OK {path} is valid JSON with {len(data.get(\"references\", []))} references')" "$file"
             fi
           done
           echo "✓ All CSL-JSON files validated"
@@ -134,7 +117,7 @@ jobs:
           echo "Checking documentation style guide compliance..."
 
           # Check for proper heading hierarchy
-          find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" | while read file; do
+          find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" | while read -r file; do
             # Check that files don't start with h2 or lower
             first_heading=$(grep -m 1 "^##" "$file" | head -1)
             if [[ $first_heading =~ ^##[^#] ]]; then
@@ -155,35 +138,36 @@ jobs:
 
       - name: Generate quality report
         run: |
-          echo "# Documentation Quality Report" > docs-report.md
-          echo "" >> docs-report.md
-          echo "Generated: $(date)" >> docs-report.md
-          echo "" >> docs-report.md
+          markdown_count=$(find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" | wc -l)
+          mermaid_count=$(find . \( -name "*.mmd" -o -name "*.mermaid" \) | wc -l)
 
-          echo "## Markdown Files" >> docs-report.md
-          echo "" >> docs-report.md
-          find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" | wc -l | xargs echo "- Total files:" >> docs-report.md
-          echo "" >> docs-report.md
+          cat <<EOF > docs-report.md
+          # Documentation Quality Report
 
-          echo "## Mermaid Diagrams" >> docs-report.md
-          echo "" >> docs-report.md
-          find . -name "*.mmd" -o -name "*.mermaid" | wc -l | xargs echo "- Total files:" >> docs-report.md
-          echo "" >> docs-report.md
+          Generated: $(date)
 
-          echo "## Status" >> docs-report.md
-          echo "" >> docs-report.md
-          echo "- Markdown Lint: ${{ needs.markdown-lint.result }}" >> docs-report.md
-          echo "- Mermaid Validation: ${{ needs.mermaid-validate.result }}" >> docs-report.md
-          echo "- CSL Validation: ${{ needs.csl-validate.result }}" >> docs-report.md
-          echo "- Documentation Standards: ${{ needs.docs-standards.result }}" >> docs-report.md
-          echo "" >> docs-report.md
+          ## Markdown Files
 
-          echo "## Style Guides" >> docs-report.md
-          echo "" >> docs-report.md
-          echo "Documentation follows these style guides:" >> docs-report.md
-          echo "- [Markdown](templates/code_styleguides/markdown.md)" >> docs-report.md
-          echo "- [Mermaid](templates/code_styleguides/mermaid.md)" >> docs-report.md
-          echo "- [CSL-JSON](templates/code_styleguides/csl-json.md)" >> docs-report.md
+          - Total files: ${markdown_count}
+
+          ## Mermaid Diagrams
+
+          - Total files: ${mermaid_count}
+
+          ## Status
+
+          - Markdown Lint: ${{ needs.markdown-lint.result }}
+          - Mermaid Validation: ${{ needs.mermaid-validate.result }}
+          - CSL Validation: ${{ needs.csl-validate.result }}
+          - Documentation Standards: ${{ needs.docs-standards.result }}
+
+          ## Style Guides
+
+          Documentation follows these style guides:
+          - [Markdown](templates/code_styleguides/markdown.md)
+          - [Mermaid](templates/code_styleguides/mermaid.md)
+          - [CSL-JSON](templates/code_styleguides/csl-json.md)
+          EOF
 
           cat docs-report.md
 
