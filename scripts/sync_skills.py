@@ -93,9 +93,9 @@ def _perform_sync(target_base_dir: Path, skills: Iterable[dict], *, flat: bool =
             skill_dir.mkdir(parents=True, exist_ok=True)
             target_file = skill_dir / "SKILL.md"
 
-        # Write bytes to avoid platform newline translation (Qwen requires LF-only frontmatter).
+        # Write LF-only text so frontmatter stays portable across platforms.
         target_file.parent.mkdir(parents=True, exist_ok=True)
-        target_file.write_bytes(content.encode("utf-8"))
+        target_file.write_text(content, encoding="utf-8", newline="\n")
 
 
 def _perform_antigravity_global_sync(target_base_dir: Path, skills: Iterable[dict]) -> None:
