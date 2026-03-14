@@ -118,4 +118,4 @@ jobs:
       - name: Validate Artifacts
         shell: bash
         run: |
-          python scripts/conductor_dev.py verify --require-vsix
+          micromamba run -n conductor python scripts/conductor_dev.py verify --require-vsix
