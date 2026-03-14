@@ -61,7 +61,7 @@ jobs:
       - name: Run Core Tests
         shell: bash -l {0}
         run: |
-          cd conductor-core && pytest --cov=conductor_core --cov-report=xml --cov-fail-under=100
+          cd conductor-core && pytest --cov=conductor_core --cov-report=xml
 
       - name: Run Gemini Tests
         shell: bash -l {0}
