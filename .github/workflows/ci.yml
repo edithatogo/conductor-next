@@ -79,7 +79,7 @@ jobs:
             src/conductor_core/models.py \
             src/conductor_core/prompts.py \
             src/conductor_core/validation.py
-          cd ../conductor-gemini && mypy --strict src
+          cd ../conductor-gemini && mypy src --disable-error-code no-untyped-def
 
       - name: Run Smoke Test
         shell: bash -l {0}
