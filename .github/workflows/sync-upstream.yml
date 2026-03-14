@@ -83,40 +83,27 @@ jobs:
         if: always()
         run: |
           generated_at=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          {
+            echo "# Upstream Sync Report"
+            echo
+            echo "Generated: ${generated_at}"
+            echo
 
-          if [ -f .github/sync_state.json ]; then
-            cat <<EOF > sync-report.md
-          # Upstream Sync Report
+            if [ -f .github/sync_state.json ]; then
+              echo "## Sync State"
+              echo
+              echo '```json'
+              cat .github/sync_state.json
+              echo '```'
+              echo
+            fi
 
-          Generated: ${generated_at}
-
-          ## Sync State
-
-          ```json
-          EOF
-            cat .github/sync_state.json >> sync-report.md
-            cat <<EOF >> sync-report.md
-          ```
-
-          ## Workflow Run
-
-          - Run ID: ${{ github.run_id }}
-          - Run Number: ${{ github.run_number }}
-          - Trigger: ${{ github.event_name }}
-          EOF
-          else
-            cat <<EOF > sync-report.md
-          # Upstream Sync Report
-
-          Generated: ${generated_at}
-
-          ## Workflow Run
-
-          - Run ID: ${{ github.run_id }}
-          - Run Number: ${{ github.run_number }}
-          - Trigger: ${{ github.event_name }}
-          EOF
-          fi
+            echo "## Workflow Run"
+            echo
+            echo "- Run ID: ${{ github.run_id }}"
+            echo "- Run Number: ${{ github.run_number }}"
+            echo "- Trigger: ${{ github.event_name }}"
+          } > sync-report.md
           
       - name: Upload sync report
         if: always()
