@@ -112,6 +112,8 @@
     "out/**",
     "media/**",
     "skills/**",
-    "package.json"
-  ]
+    "package.json",
+    "LICENSE.md"
+  ],
+  "license": "Apache-2.0"
 }
