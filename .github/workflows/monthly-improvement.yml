@@ -111,8 +111,8 @@ jobs:
           retention-days: 30
 
       - name: Upload SARIF (if created)
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        if: ${{ always() && hashFiles('.conductor/security-results.sarif') != '' }}
         with:
           sarif_file: .conductor/security-results.sarif
         continue-on-error: true

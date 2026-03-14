@@ -22,6 +22,15 @@ from pathlib import Path
 from typing import List
 
 
+def _normalize_vulnerability_count(value) -> int:
+    """Normalize npm audit vulnerability counts across legacy and modern schemas."""
+    if isinstance(value, int):
+        return value
+    if isinstance(value, dict):
+        return sum(v for v in value.values() if isinstance(v, int))
+    return 0
+
+
 def load_data(data_dir: Path) -> dict:
     """
     Load collected improvement data.
@@ -206,13 +215,19 @@ def prioritize_security(security_data: dict) -> List[dict]:
     # NPM vulnerabilities
     npm_audits = security_data.get("npm_audits", {})
     for dir, audit in npm_audits.items():
-        if isinstance(audit, dict) and audit.get("vulnerabilities", 0) > 0:
+        vulnerability_count = 0
+        if isinstance(audit, dict):
+            vulnerability_count = _normalize_vulnerability_count(
+                audit.get("vulnerabilities", 0)
+            )
+
+        if vulnerability_count > 0:
             tasks.append(
                 {
                     "title": f"Fix NPM vulnerabilities in {dir}",
                     "priority": "P0",
-                    "description": f"Address {audit['vulnerabilities']} vulnerabilities",
-                    "vulnerabilities": audit["vulnerabilities"],
+                    "description": f"Address {vulnerability_count} vulnerabilities",
+                    "vulnerabilities": vulnerability_count,
                 }
             )
 
