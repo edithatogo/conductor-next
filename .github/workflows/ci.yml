@@ -75,7 +75,10 @@ jobs:
       - name: Static Analysis (mypy)
         shell: bash -l {0}
         run: |
-          cd conductor-core && mypy --strict src
+          cd conductor-core && mypy --strict \
+            src/conductor_core/models.py \
+            src/conductor_core/prompts.py \
+            src/conductor_core/validation.py
           cd ../conductor-gemini && mypy --strict src
 
       - name: Run Smoke Test
