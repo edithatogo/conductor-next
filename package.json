@@ -7,7 +7,8 @@
     "conductor": "./bin/conductor.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "verify": "python scripts/conductor_dev.py verify",
+    "test": "npm run verify"
   },
   "keywords": [
     "ai",
@@ -25,9 +26,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/edithatogo/conductor-next-next.git"
+    "url": "https://github.com/edithatogo/conductor-next.git"
   },
-  "homepage": "https://github.com/edithatogo/conductor-next-next",
+  "homepage": "https://github.com/edithatogo/conductor-next",
   "engines": {
     "node": ">=18.0.0"
   }

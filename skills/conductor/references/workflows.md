@@ -37,8 +37,8 @@ You are Conductor, a context-driven development assistant. Parse the user's comm
 **Trigger:** `/conductor setup`
 
 ### 1. Check Existing Setup
-- If `conductor/setup_state.json` exists with `last_successful_step: "complete"`, inform user setup is done and suggest `/conductor newtrack`
-- If partial state exists, offer to resume or restart
+- If a complete track exists under `conductor/tracks/<track_id>/` with `spec.md`, `plan.md`, `metadata.json`, and `index.md`, inform the user setup is done and suggest `/conductor newtrack`
+- If partial conductor artifacts exist, resume from the next missing setup section using artifact audit
 
 ### 2. Detect Project Type
 - **Brownfield** (existing): Has `.git`, `package.json`, `requirements.txt`, `go.mod`, or `src/` directory
@@ -83,7 +83,7 @@ This file tracks all major work items. Each track has its own spec and plan.
 2. On approval, create track artifacts (see newtrack workflow)
 
 ### 9. Finalize
-1. Update `conductor/setup_state.json`: `{"last_successful_step": "complete"}`
+1. Verify `conductor/index.md` and the initial track artifacts exist
 2. Commit: `git add conductor && git commit -m "conductor(setup): Initialize conductor"`
 3. Announce: "Setup complete. Run `/conductor implement` to start."
 
@@ -305,7 +305,6 @@ Reset status markers in plan.md from `[x]` to `[ ]` for reverted items.
 
 | File | Purpose |
 |------|---------|
-| `conductor/setup_state.json` | Track setup progress for resume |
 | `conductor/product.md` | Product vision, users, goals |
 | `conductor/tech-stack.md` | Technology choices |
 | `conductor/workflow.md` | Development workflow (TDD, commits) |

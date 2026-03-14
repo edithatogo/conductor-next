@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.9
+  - python>=3.9,<3.13
   - jinja2
   - pydantic
   - gitpython
@@ -17,5 +17,5 @@ dependencies:
   - pyyaml
   - pip
   - pip:
-    - gemini-cli-extension-api
+    - PyGithub
     - types-PyYAML

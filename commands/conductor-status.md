@@ -1,68 +1,53 @@
+## 1.0 SYSTEM DIRECTIVE
+You are an AI agent. Your primary function is to provide a status overview of the current tracks file. This involves reading the **Tracks Registry** file, parsing its content, and summarizing the progress of tasks.
+
+CRITICAL: You must validate the success of every tool call. If any tool call fails, you MUST halt the current operation immediately, announce the failure to the user, and await further instructions.
+
 ---
-description: Display current Conductor project progress
+
+
+## 1.1 SETUP CHECK
+**PROTOCOL: Verify that the Conductor environment is properly set up.**
+
+1.  **Verify Core Context:** Using the **Universal File Resolution Protocol**, resolve and verify the existence of:
+    -   **Tracks Registry**
+    -   **Product Definition**
+    -   **Tech Stack**
+    -   **Workflow**
+
+2.  **Handle Failure:**
+    -   If ANY of these files are missing, you MUST halt the operation immediately.
+    -   Announce: "Conductor is not set up. Please run `/conductor:setup` to set up the environment."
+    -   Do NOT proceed to Status Overview Protocol.
+
 ---
 
-# Conductor Status
+## 2.0 STATUS OVERVIEW PROTOCOL
+**PROTOCOL: Follow this sequence to provide a status overview.**
 
-Show the current status of this Conductor project.
+### 2.1 Read Project Plan
+1.  **Locate and Read:** Read the content of the **Tracks Registry** (resolved via **Universal File Resolution Protocol**).
+2.  **Locate and Read Tracks:**
+    -   Parse the **Tracks Registry** to identify all registered tracks and their paths.
+        *   **Parsing Logic:** When reading the **Tracks Registry** to identify tracks, look for lines matching either the new standard format `- [ ] **Track:` or the legacy format `## [ ] Track:`.
+    -   For each track, resolve and read its **Implementation Plan** (using **Universal File Resolution Protocol** via the track's index file).
 
-## 1. Check Setup
+### 2.2 Parse and Summarize Plan
+1.  **Parse Content:**
+    -   Identify major project phases/sections (e.g., top-level markdown headings).
+    -   Identify individual tasks and their current status (e.g., bullet points under headings, looking for keywords like "COMPLETED", "IN PROGRESS", "PENDING").
+2.  **Generate Summary:** Create a concise summary of the project's overall progress. This should include:
+    -   The total number of major phases.
+    -   The total number of tasks.
+    -   The number of tasks completed, in progress, and pending.
 
-<<<<<<< HEAD
-If `conductor/tracks.md` doesn't exist, tell user to run `/conductor:setup` first.
-=======
-If `conductor/tracks.md` doesn't exist, tell user to run `/conductor-setup` first.
->>>>>>> pr-9
-
-## 2. Read State
-
-- Read `conductor/tracks.md`
-- List all track directories: `conductor/tracks/*/`
-- Read each `conductor/tracks/<track_id>/plan.md`
-
-## 3. Calculate Progress
-
-For each track:
-- Count total tasks (lines with `- [ ]`, `- [~]`, `- [x]`)
-- Count completed `[x]`
-- Count in-progress `[~]`
-- Count pending `[ ]`
-- Calculate percentage: (completed / total) * 100
-
-## 4. Present Summary
-
-Format the output like this:
-
-```
-## Conductor Status
-
-**Active Track:** [track name] ([completed]/[total] tasks - [percent]%)
-**Overall Status:** In Progress | Complete | No Active Tracks
-
-### All Tracks
-- [x] Track: ... (100% complete)
-- [~] Track: ... (45% complete) ← ACTIVE
-- [ ] Track: ... (0% - not started)
-
-### Current Task
-[The task marked with [~] in the active track's plan.md]
-
-### Next Action
-[The next task marked with [ ] in the active track's plan.md]
-
-### Recent Completions
-[Last 3 tasks marked [x] with their commit SHAs]
-```
-
-## 5. Suggestions
-
-Based on status:
-<<<<<<< HEAD
-- If no tracks: "Run `/conductor:newtrack` to create your first track"
-- If track in progress: "Run `/conductor:implement` to continue"
-- If all complete: "All tracks complete! Run `/conductor:newtrack` for new work"
-=======
-- If no tracks: "Run `/conductor-newtrack` to create your first track"
-- If track in progress: "Run `/conductor-implement` to continue"
-- If all complete: "All tracks complete! Run `/conductor-newtrack` for new work"
->>>>>>> pr-9
+### 2.3 Present Status Overview
+1.  **Output Summary:** Present the generated summary to the user in a clear, readable format. The status report must include:
+    -   **Current Date/Time:** The current timestamp.
+    -   **Project Status:** A high-level summary of progress (e.g., "On Track", "Behind Schedule", "Blocked").
+    -   **Current Phase and Task:** The specific phase and task currently marked as "IN PROGRESS".
+    -   **Next Action Needed:** The next task listed as "PENDING".
+    -   **Blockers:** Any items explicitly marked as blockers in the plan.
+    -   **Phases (total):** The total number of major phases.
+    -   **Tasks (total):** The total number of tasks.
+    -   **Progress:** The overall progress of the plan, presented as tasks_completed/tasks_total (percentage_completed%).

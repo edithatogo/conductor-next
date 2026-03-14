@@ -23,6 +23,29 @@ from pathlib import Path
 from typing import Dict, List
 
 
+def _extract_npm_vulnerability_total(audit_data: dict) -> int:
+    """Normalize npm audit vulnerability counts across npm output formats."""
+    vulnerabilities = audit_data.get("metadata", {}).get("vulnerabilities", 0)
+    if isinstance(vulnerabilities, int):
+        return vulnerabilities
+    if isinstance(vulnerabilities, dict):
+        return sum(value for value in vulnerabilities.values() if isinstance(value, int))
+    return 0
+
+
+def _python_dependency_manifest() -> Path | None:
+    """Return the Python dependency manifest used for auditing."""
+    requirements = Path("requirements.txt")
+    return requirements if requirements.exists() else None
+
+
+def _count_python_vulnerabilities(results: list | dict) -> int:
+    """Count actual Python vulnerabilities, excluding scanner errors."""
+    if isinstance(results, list):
+        return sum(1 for item in results if isinstance(item, dict) and "error" not in item)
+    return 0
+
+
 def run_command(cmd: List[str], cwd: Path = None, timeout: int = 60) -> dict:
     """
     Run a command and capture output.
@@ -65,7 +88,7 @@ def npm_audit(path: Path) -> dict:
             try:
                 data = json.loads(result["stdout"])
                 return {
-                    "vulnerabilities": data.get("metadata", {}).get("vulnerabilities", 0),
+                    "vulnerabilities": _extract_npm_vulnerability_total(data),
                     "details": data,
                     "has_vulnerabilities": True,
                 }
@@ -76,7 +99,7 @@ def npm_audit(path: Path) -> dict:
         try:
             data = json.loads(result["stdout"])
             return {
-                "vulnerabilities": data.get("metadata", {}).get("vulnerabilities", 0),
+                "vulnerabilities": _extract_npm_vulnerability_total(data),
                 "details": data,
                 "has_vulnerabilities": False,
             }
@@ -103,7 +126,11 @@ def pip_safety() -> list:
             pass
 
     # Fallback to pip-audit
-    result = run_command(["pip-audit", "-r", "requirements.txt", "-f", "json"])
+    requirements = _python_dependency_manifest()
+    if requirements is None:
+        return [{"error": "No requirements.txt found for pip-audit"}]
+
+    result = run_command(["pip-audit", "-r", str(requirements), "-f", "json"])
 
     if result["stdout"]:
         try:
@@ -171,7 +198,7 @@ def generate_report(
         "bandit": bandit_results,
         "summary": {
             "total_npm_vulnerabilities": sum(r.get("vulnerabilities", 0) for r in npm_results.values()),
-            "total_python_vulnerabilities": len(python_results) if isinstance(python_results, list) else 0,
+            "total_python_vulnerabilities": _count_python_vulnerabilities(python_results),
             "total_bandit_issues": sum(
                 r.get("issues", 0) for r in bandit_results.values() if isinstance(r, dict) and "error" not in r
             ),
@@ -291,10 +318,7 @@ def main():
     # Python safety
     print("\nRunning Python dependency check...")
     python_results = pip_safety()
-    if isinstance(python_results, list):
-        vulns = len(python_results)
-    else:
-        vulns = 0
+    vulns = _count_python_vulnerabilities(python_results)
     status = "[ERROR]" if vulns > 0 else "[OK]"
     print(f"  {status} {vulns} vulnerabilities")
 

@@ -21,10 +21,6 @@ class ProjectManager:
         if not self.conductor_path.exists():
             self.conductor_path.mkdir(parents=True)
 
-        state_file = self.conductor_path / "setup_state.json"
-        if not state_file.exists():
-            state_file.write_text(json.dumps({"last_successful_step": ""}))
-
         product_file = self.conductor_path / "product.md"
         if not product_file.exists():
             product_file.write_text(f"# Product Context\n\n## Initial Concept\n{goal}\n")

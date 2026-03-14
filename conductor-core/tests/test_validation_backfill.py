@@ -103,7 +103,7 @@ def test_synchronize_gemini_toml(validation_setup, tmp_path):
 def test_synchronize_gemini_toml_missing(validation_setup):
     vs, _ = validation_setup
     valid, _msg = vs.synchronize_gemini_toml("missing.toml", "test.md")
-    assert not valid
+    assert valid
 
 
 def test_synchronize_claude_md(validation_setup, tmp_path):

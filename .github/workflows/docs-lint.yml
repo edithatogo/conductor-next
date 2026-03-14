@@ -4,18 +4,23 @@ on:
   push:
     branches: [main, master, next]
     paths:
-      - '**.md'
-      - '**.mmd'
+      - '**/*.md'
+      - '**/*.mmd'
+      - '**/*.mermaid'
       - '**/csl-json/**'
       - '.markdownlint.json'
   pull_request:
     branches: [main, master, next]
     paths:
-      - '**.md'
-      - '**.mmd'
+      - '**/*.md'
+      - '**/*.mmd'
+      - '**/*.mermaid'
       - '**/csl-json/**'
       - '.markdownlint.json'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   markdown-lint:
@@ -54,7 +59,7 @@ jobs:
       - name: Find and validate Mermaid files
         run: |
           echo "Checking Mermaid diagram files..."
-          find . -name "*.mmd" -o -name "*.mermaid" | while read file; do
+          find . \( -name "*.mmd" -o -name "*.mermaid" \) | while read file; do
             echo "Validating: $file"
             mmdc -i "$file" -o /dev/null || exit 1
           done
@@ -79,23 +84,27 @@ jobs:
       - name: Validate CSL-JSON files
         run: |
           echo "Checking CSL-JSON reference files..."
-          find . -name "references.json" -o -name "*.csl.json" | while read file; do
+          find . \( -name "references.json" -o -name "*.csl.json" \) | while read file; do
             if [ -f "$file" ]; then
               echo "Validating: $file"
-              python -c "
-import json
-import sys
-with open('$file') as f:
-    try:
-        data = json.load(f)
-        if 'references' not in data:
-            print(f'Error: {file} missing references array')
-            sys.exit(1)
-        print(f'✓ {file} is valid JSON with {len(data.get(\"references\", []))} references')
-    except json.JSONDecodeError as e:
-        print(f'Error: {file} is invalid JSON: {e}')
-        sys.exit(1)
-              "
+              python - "$file" <<'PY'
+              import json
+              import sys
+
+              path = sys.argv[1]
+              with open(path, encoding="utf-8") as handle:
+                  try:
+                      data = json.load(handle)
+                  except json.JSONDecodeError as exc:
+                      print(f"Error: {path} is invalid JSON: {exc}")
+                      sys.exit(1)
+
+              if "references" not in data:
+                  print(f"Error: {path} missing references array")
+                  sys.exit(1)
+
+              print(f"✓ {path} is valid JSON with {len(data.get('references', []))} references")
+              PY
             fi
           done
           echo "✓ All CSL-JSON files validated"

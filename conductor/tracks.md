@@ -44,41 +44,22 @@ See individual track folders for detailed implementation history.
 
 ## Active Tracks
 
-### Phase 4: Repository Self-Improvement Tracks
-- [x] **repo_improvement_20260303** - Monthly improvement cycle with Ralph Mode 2.0 ✅ **ARCHIVED**
-  - Status: 7/7 tasks complete (100%)
-  - Started: March 3, 2026
-  - Completed: March 3, 2026
-  - Archived: March 4, 2026
+### Maintenance Tracks
+- [ ] **improvement_20260304** - Generated monthly improvement track awaiting refreshed data collection
+  - Status: Generated, but the underlying automation run needs to be refreshed after CI/workflow fixes
+  - Started: March 4, 2026
   - Priority: P1-High
-  - Focus: Adopt upstream P1 improvements, implement Ralph Mode 2.0, establish automation
-  - **Phase 1:** 5/5 tasks (100% COMPLETE! ✅)
-  - **Phase 2:** 2/2 tasks (100% COMPLETE! ✅)
-  - **Phase 5:** 1/1 task (100% COMPLETE! ✅)
-  - **Deliverables:** 18 files, 6,926 lines, 19 tests
-  - **Final Report:** conductor/archive/repo_improvement_20260303/FINAL_REPORT.md
-  - **Location:** conductor/archive/repo_improvement_20260303/
-
----
-
-## Active Tracks
-
-**None** - All tracks complete! 🎉
+  - Current issue: The generated plan contains zero tasks because the previous collector run did not complete cleanly
+  - Next step: Re-run the monthly improvement workflow after automation fixes land and regenerate the track contents
 
 **Next Recommended:** `repo_improvement_20260401` - April Improvement Cycle
 **Focus Areas:**
-- Implement Artifact Inference Setup (from ARTIFACT_INFERENCE_PLAN.md)
-- Add Plan Mode Warning Hook (adopt upstream PR #124)
-- Ralph Mode 2.0 with learning system
-- Cross-platform CI expansion
-
-## Archived Tracks
-
-All completed tracks are archived in `conductor/tracks/archive/`.
-
-See individual track folders for detailed implementation history.
+- Re-run and validate the monthly improvement automation end-to-end
+- Finish the artifact-inference migration by removing remaining `setup_state.json` references
+- Add plan-mode warning and workflow guardrails
+- Expand cross-platform CI and release verification
 
 ---
 
-*Last updated: 2026-03-03*
+*Last updated: 2026-03-14*
 *Total commits this session: 20+*

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 
 from .prompts import PromptProvider
@@ -18,14 +19,16 @@ class ValidationService:
         if not path.exists():
             return False, f"File not found: {toml_path}"
 
-        toml_content = path.read_text(encoding="utf-8")
+        try:
+            parsed = tomllib.loads(path.read_text(encoding="utf-8"))
+        except tomllib.TOMLDecodeError as exc:
+            return False, f"Invalid TOML in {toml_path}: {exc}"
 
-        # Simple regex to extract prompt string from TOML
-        match = re.search(r'prompt\s*=\s*"""(.*?)"""', toml_content, re.DOTALL)
-        if not match:
+        toml_prompt = parsed.get("prompt")
+        if not isinstance(toml_prompt, str):
             return False, f"Could not find prompt field in {toml_path}"
 
-        toml_prompt = match.group(1).strip()
+        toml_prompt = toml_prompt.strip()
         core_prompt = self.provider.get_template_text(template_name).strip()
 
         if toml_prompt == core_prompt:
@@ -60,25 +63,18 @@ class ValidationService:
         Overwrites the 'prompt' field in a Gemini TOML with the core template content.
         """
         path = Path(toml_path)
-        if not path.exists():
-            return False, f"File not found: {toml_path}"
-
-        content = path.read_text(encoding="utf-8")
-
         core_prompt = self.provider.get_template_text(template_name).strip()
-        prompt_block = f'prompt = """\n{core_prompt}\n"""'
-        if re.search(r'prompt\s*=\s*""".*?"""', content, flags=re.DOTALL):
-            new_content = re.sub(
-                r'prompt\s*=\s*""".*?"""',
-                prompt_block,
-                content,
-                flags=re.DOTALL,
-            )
-        elif re.search(r'prompt\s*=\s*""', content):
-            new_content = re.sub(r'prompt\s*=\s*""', prompt_block, content)
-        else:
-            new_content = content.rstrip() + "\n" + prompt_block + "\n"
+        description = path.stem.replace("_", " ")
 
+        if path.exists():
+            content = path.read_text(encoding="utf-8")
+            match = re.search(r'description\s*=\s*"([^"]*)"', content)
+            if match:
+                description = match.group(1)
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+        new_content = f'description = "{description}"\nprompt = """\n{core_prompt}\n"""\n'
         path.write_text(new_content, encoding="utf-8")
 
         return True, "Successfully synchronized Gemini TOML"

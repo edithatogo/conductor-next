@@ -12,6 +12,9 @@ import os
 import sys
 import json
 import hashlib
+import shutil
+import subprocess
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -34,10 +37,10 @@ class GitHubClient:
         Args:
             token: GitHub personal access token. Falls back to GITHUB_TOKEN env var.
         """
-        self.token = token or os.environ.get("GITHUB_TOKEN")
+        self.token = token or os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
         if not self.token:
             raise UpstreamSyncError(
-                "GitHub token required. Set GITHUB_TOKEN environment variable."
+                "GitHub token required. Set GH_TOKEN or GITHUB_TOKEN environment variable."
             )
         self.auth = Auth.Token(self.token)
         self.gh = Github(auth=self.auth)
@@ -189,7 +192,15 @@ class SyncState:
 class UpstreamSyncBot:
     """Main sync bot orchestrator."""
 
-    def __init__(self, target_repo: str, upstreams: list[str], state_file: Path):
+    def __init__(
+        self,
+        target_repo: str,
+        upstreams: list[str],
+        state_file: Path,
+        *,
+        dry_run: bool = False,
+        create_prs: bool = False,
+    ):
         """Initialize sync bot.
 
         Args:
@@ -199,10 +210,116 @@ class UpstreamSyncBot:
         """
         self.target_repo = target_repo
         self.upstreams = upstreams
+        self.dry_run = dry_run
+        self.create_prs = create_prs
         self.client = GitHubClient()
         self.state = SyncState(state_file)
+        self.repo_root = Path(self._run_git(["rev-parse", "--show-toplevel"]).stdout.strip())
 
-    def fetch_upstream(self, upstream: str) -> dict:
+    def _run_git(
+        self,
+        args: list[str],
+        *,
+        cwd: Optional[Path] = None,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess[str]:
+        """Run a git command and optionally fail with detailed context."""
+        result = subprocess.run(
+            ["git", *args],
+            cwd=cwd or Path.cwd(),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if check and result.returncode != 0:
+            detail = result.stderr.strip() or result.stdout.strip() or "git command failed"
+            raise UpstreamSyncError(f"git {' '.join(args)} failed: {detail}")
+        return result
+
+    def _resolve_upstream_branch(self, upstream: str, preferred_branch: str) -> str:
+        """Resolve the branch to sync from for an upstream repository."""
+        repo_data = self.client.get_repo(upstream)
+        default_branch = repo_data.get("default_branch", "main")
+
+        for candidate in [preferred_branch, default_branch]:
+            try:
+                self.client.get_branch(upstream, candidate)
+                return candidate
+            except requests.HTTPError as exc:
+                if exc.response is None or exc.response.status_code != 404:
+                    raise
+
+        raise UpstreamSyncError(
+            f"Could not resolve an upstream branch for {upstream} "
+            f"(preferred={preferred_branch}, default={default_branch})"
+        )
+
+    def _build_pr_body(
+        self,
+        upstream: str,
+        upstream_sha: str,
+        *,
+        upstream_branch: str,
+        sync_mode: str,
+        details: str = "",
+    ) -> str:
+        extra = f"\n### Notes\n{details}\n" if details else ""
+        return f"""## Upstream Sync
+
+Automated sync from [{upstream}](https://github.com/{upstream})
+
+**Upstream Branch:** `{upstream_branch}`
+**Upstream Commit:** `{upstream_sha[:7]}`
+**Sync Time:** {datetime.now(timezone.utc).isoformat()}
+**Mode:** `{sync_mode}`
+
+### Changes
+- Automated upstream sync via sync_upstream.py
+- Review changes before merging
+{extra}
+---
+*This PR was created automatically by the Upstream Sync Bot*
+"""
+
+    def _create_conflict_report(
+        self,
+        worktree_dir: Path,
+        *,
+        upstream: str,
+        upstream_branch: str,
+        upstream_sha: str,
+        branch_name: str,
+        merge_result: subprocess.CompletedProcess[str],
+    ) -> Path:
+        report_dir = worktree_dir / ".github" / "upstream-sync"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        report_path = report_dir / f"{branch_name.replace('/', '_')}.md"
+        report_path.write_text(
+            "\n".join(
+                [
+                    f"# Manual Sync Review: {upstream}",
+                    "",
+                    f"- Upstream branch: `{upstream_branch}`",
+                    f"- Upstream commit: `{upstream_sha}`",
+                    f"- Generated: {datetime.now(timezone.utc).isoformat()}",
+                    "",
+                    "## Merge Output",
+                    "```text",
+                    (merge_result.stdout or "").strip(),
+                    (merge_result.stderr or "").strip(),
+                    "```",
+                    "",
+                    "## Follow-up",
+                    "- Resolve the merge manually on this branch.",
+                    "- Re-run tests before merging.",
+                ]
+            ).strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        return report_path
+
+    def fetch_upstream(self, upstream: str, preferred_branch: str) -> dict:
         """Fetch upstream repository information.
 
         Args:
@@ -211,37 +328,50 @@ class UpstreamSyncBot:
         Returns:
             Upstream repo and branch data
         """
-        print(f"[FETCH] Fetching {upstream}...")
+        upstream_branch = self._resolve_upstream_branch(upstream, preferred_branch)
+        print(f"[FETCH] Fetching {upstream}@{upstream_branch}...")
         repo_data = self.client.get_repo(upstream)
-        branch_data = self.client.get_branch(upstream)
+        branch_data = self.client.get_branch(upstream, upstream_branch)
         return {
             "repo": repo_data,
             "branch": branch_data,
+            "branch_name": upstream_branch,
             "sha": branch_data["commit"]["sha"],
         }
 
-    def check_merge_conflicts(self, upstream: str, target_branch: str = "main") -> bool:
-        """Check if syncing would cause merge conflicts.
+    def compare_upstream(
+        self,
+        upstream: str,
+        *,
+        target_branch: str = "main",
+        upstream_branch: str = "main",
+    ) -> dict:
+        """Compare target and upstream branches.
 
         Args:
             upstream: Upstream repository name
             target_branch: Target branch name
+            upstream_branch: Upstream branch name
 
         Returns:
-            True if conflicts detected
+            GitHub comparison payload
         """
         try:
-            comparison = self.client.compare_branches(
-                self.target_repo, upstream, target_branch, target_branch
+            return self.client.compare_branches(
+                self.target_repo, upstream, target_branch, upstream_branch
             )
-            # If status is 'diverged' or has merge conflicts
-            return comparison.get("status") == "diverged"
         except Exception as e:
             print(f"[WARN] Could not compare branches: {e}")
-            return True
+            return {"status": "unknown", "ahead_by": 0, "behind_by": 0, "commits": []}
 
     def create_sync_pr(
-        self, upstream: str, upstream_sha: str, target_branch: str = "main"
+        self,
+        upstream: str,
+        upstream_sha: str,
+        *,
+        upstream_branch: str,
+        target_branch: str = "main",
+        comparison_status: str = "ahead",
     ) -> Optional[dict]:
         """Create a PR for upstream changes.
 
@@ -253,45 +383,102 @@ class UpstreamSyncBot:
         Returns:
             PR data if created, None otherwise
         """
-        # Create a branch name with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         upstream_name = upstream.replace("/", "-")
         branch_name = f"sync/{upstream_name}_{timestamp}"
-
-        # In a real implementation, we would:
-        # 1. Create the branch from upstream
-        # 2. Apply changes
-        # 3. Create PR
-
         title = f"Sync from {upstream}"
-        body = f"""## Upstream Sync
 
-Automated sync from [{upstream}](https://github.com/{upstream})
-
-**Upstream Commit:** `{upstream_sha[:7]}`
-**Sync Time:** {datetime.now(timezone.utc).isoformat()}
-
-### Changes
-- Automated upstream sync via sync_upstream.py
-- Review changes before merging
-
----
-*This PR was created automatically by the Upstream Sync Bot*
-"""
-
-        print(f"[PR] Would create draft PR: {title}")
+        print(f"[PLAN] Preparing upstream sync PR: {title}")
         print(f"     Branch: {branch_name}")
-        print(f"     From: {upstream}")
+        print(f"     From: {upstream}@{upstream_branch}")
         print(f"     To: {self.target_repo}:{target_branch}")
 
-        # For now, just log what would happen
-        # In production, uncomment to actually create PR:
-        # pr = self.client.create_pull_request(
-        #     self.target_repo, title, body, branch_name, target_branch, draft=True
-        # )
-        # return pr
+        if self.dry_run:
+            return {
+                "title": title,
+                "body": self._build_pr_body(
+                    upstream,
+                    upstream_sha,
+                    upstream_branch=upstream_branch,
+                    sync_mode="dry_run",
+                    details=f"Comparison status: {comparison_status}",
+                ),
+                "head": branch_name,
+                "base": target_branch,
+                "draft": True,
+                "dry_run": True,
+            }
 
-        return None
+        worktree_dir = Path(tempfile.mkdtemp(prefix="conductor-sync-"))
+        worktree_added = False
+        sync_mode = "merge"
+        details = f"Comparison status: {comparison_status}"
+
+        try:
+            self._run_git(["worktree", "add", "--detach", str(worktree_dir), target_branch], cwd=self.repo_root)
+            worktree_added = True
+            self._run_git(["switch", "-c", branch_name], cwd=worktree_dir)
+            self._run_git(
+                ["config", "user.name", "github-actions[bot]"],
+                cwd=worktree_dir,
+            )
+            self._run_git(
+                ["config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"],
+                cwd=worktree_dir,
+            )
+
+            self._run_git(
+                ["fetch", "--no-tags", f"https://github.com/{upstream}.git", upstream_branch],
+                cwd=worktree_dir,
+            )
+            merge_result = self._run_git(
+                ["merge", "--no-ff", "--no-edit", "FETCH_HEAD"],
+                cwd=worktree_dir,
+                check=False,
+            )
+
+            if merge_result.returncode != 0:
+                sync_mode = "conflict_report"
+                self._run_git(["merge", "--abort"], cwd=worktree_dir, check=False)
+                report_path = self._create_conflict_report(
+                    worktree_dir,
+                    upstream=upstream,
+                    upstream_branch=upstream_branch,
+                    upstream_sha=upstream_sha,
+                    branch_name=branch_name,
+                    merge_result=merge_result,
+                )
+                self._run_git(["add", str(report_path.relative_to(worktree_dir))], cwd=worktree_dir)
+                self._run_git(
+                    ["commit", "-m", f"chore(sync): record manual sync review for {upstream}"],
+                    cwd=worktree_dir,
+                )
+                details = (
+                    f"Comparison status: {comparison_status}\n"
+                    f"Merge conflicts were detected. Review `{report_path.relative_to(worktree_dir)}`."
+                )
+
+            self._run_git(["push", "-u", "origin", branch_name], cwd=worktree_dir)
+            pr = self.client.create_pull_request(
+                self.target_repo,
+                title,
+                self._build_pr_body(
+                    upstream,
+                    upstream_sha,
+                    upstream_branch=upstream_branch,
+                    sync_mode=sync_mode,
+                    details=details,
+                ),
+                branch_name,
+                target_branch,
+                draft=True,
+            )
+            pr["sync_mode"] = sync_mode
+            return pr
+        finally:
+            if worktree_added:
+                self._run_git(["worktree", "remove", "--force", str(worktree_dir)], cwd=self.repo_root, check=False)
+            shutil.rmtree(worktree_dir, ignore_errors=True)
 
     def sync(self, target_branch: str = "main") -> dict:
         """Run the sync process for all upstreams.
@@ -315,33 +502,63 @@ Automated sync from [{upstream}](https://github.com/{upstream})
 
             try:
                 # Fetch upstream
-                upstream_data = self.fetch_upstream(upstream)
+                upstream_data = self.fetch_upstream(upstream, target_branch)
                 upstream_sha = upstream_data["sha"]
+                upstream_branch = upstream_data["branch_name"]
 
-                print(f"[INFO] Latest commit: {upstream_sha[:7]}")
+                print(f"[INFO] Latest commit: {upstream_sha[:7]} ({upstream_branch})")
 
-                # Check for conflicts
-                has_conflicts = self.check_merge_conflicts(upstream, target_branch)
+                comparison = self.compare_upstream(
+                    upstream,
+                    target_branch=target_branch,
+                    upstream_branch=upstream_branch,
+                )
+                comparison_status = comparison.get("status", "unknown")
+                ahead_by = comparison.get("ahead_by", 0)
+                behind_by = comparison.get("behind_by", 0)
+                print(
+                    f"[INFO] Comparison status: {comparison_status} "
+                    f"(ahead_by={ahead_by}, behind_by={behind_by})"
+                )
 
-                if has_conflicts:
-                    print(f"[CONFLICT] Merge conflicts detected")
-                    # Create draft PR for manual resolution
-                    pr = self.create_sync_pr(upstream, upstream_sha, target_branch)
-                    self.state.update_sync(upstream, upstream_sha, "conflict")
+                if comparison_status in {"identical", "behind"}:
+                    print("[OK] No upstream changes require a sync PR.")
+                    self.state.update_sync(upstream, upstream_sha, "up_to_date")
                     results["upstreams"].append({
                         "name": upstream,
                         "sha": upstream_sha,
-                        "status": "conflict",
+                        "branch": upstream_branch,
+                        "status": "up_to_date",
+                        "comparison_status": comparison_status,
+                    })
+                elif self.create_prs:
+                    pr = self.create_sync_pr(
+                        upstream,
+                        upstream_sha,
+                        upstream_branch=upstream_branch,
+                        target_branch=target_branch,
+                        comparison_status=comparison_status,
+                    )
+                    sync_status = "review_required" if pr.get("sync_mode") == "conflict_report" else "pr_created"
+                    self.state.update_sync(upstream, upstream_sha, sync_status)
+                    results["upstreams"].append({
+                        "name": upstream,
+                        "sha": upstream_sha,
+                        "branch": upstream_branch,
+                        "status": sync_status,
+                        "comparison_status": comparison_status,
                         "pr": pr,
                     })
                 else:
-                    print(f"[OK] No conflicts detected")
-                    # In production, would auto-merge here
-                    self.state.update_sync(upstream, upstream_sha, "success")
+                    print("[INFO] Upstream changes detected, but PR creation is disabled for this run.")
+                    observed_status = "review_required" if comparison_status == "diverged" else "changes_detected"
+                    self.state.update_sync(upstream, upstream_sha, observed_status)
                     results["upstreams"].append({
                         "name": upstream,
                         "sha": upstream_sha,
-                        "status": "success",
+                        "branch": upstream_branch,
+                        "status": observed_status,
+                        "comparison_status": comparison_status,
                     })
 
             except Exception as e:
@@ -394,6 +611,11 @@ def main():
         action="store_true",
         help="Run without making changes",
     )
+    parser.add_argument(
+        "--create-pr",
+        action="store_true",
+        help="Create and push a draft pull request branch when upstream changes are detected",
+    )
 
     args = parser.parse_args()
 
@@ -405,6 +627,7 @@ def main():
     print(f"Upstreams: {', '.join(args.upstream)}")
     print(f"State file: {args.state_file}")
     print(f"Dry run: {args.dry_run}")
+    print(f"Create PRs: {args.create_pr}")
     print("="*60)
 
     if args.dry_run:
@@ -412,7 +635,13 @@ def main():
         return 0
 
     try:
-        bot = UpstreamSyncBot(args.target, args.upstream, args.state_file)
+        bot = UpstreamSyncBot(
+            args.target,
+            args.upstream,
+            args.state_file,
+            dry_run=args.dry_run,
+            create_prs=args.create_pr,
+        )
         results = bot.sync(target_branch=args.branch)
 
         print("\n" + "="*60)

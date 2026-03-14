@@ -16,7 +16,6 @@ def test_initialize_project(workspace):
 
     conductor_dir = workspace / "conductor"
     assert conductor_dir.exists()
-    assert (conductor_dir / "setup_state.json").exists()
     assert (conductor_dir / "product.md").exists()
 
     product_content = (conductor_dir / "product.md").read_text()

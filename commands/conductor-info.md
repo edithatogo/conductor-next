@@ -66,7 +66,6 @@ conductor/
 â”œâ”€â”€ tech-stack.md           # Technology choices
 â”œâ”€â”€ workflow.md             # Development standards (TDD, commits, coverage)
 â”œâ”€â”€ tracks.md               # Master track list with status markers
-â”œâ”€â”€ setup_state.json        # Setup progress tracking
 â”œâ”€â”€ code_styleguides/       # Language-specific style guides
 â””â”€â”€ tracks/
     â””â”€â”€ <track_id>/         # Format: shortname_YYYYMMDD

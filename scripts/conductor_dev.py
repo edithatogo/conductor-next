@@ -29,6 +29,7 @@ def verify(require_vsix):
     env["PYTHONPATH"] = str(ROOT / "conductor-core" / "src")
     
     cmds = [
+        [python, "scripts/validate_conductor_assets.py"],
         [python, "scripts/validate_platforms.py"],
         [python, "scripts/validate_antigravity.py"],
         [python, "scripts/check_skills_sync.py"]

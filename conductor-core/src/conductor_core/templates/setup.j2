@@ -7,30 +7,47 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
 
 ---
 
-## 1.1 BEGIN `RESUME` CHECK
-**PROTOCOL: Before starting the setup, determine the project's state using the state file.**
+## 1.1 PROJECT AUDIT
+**PROTOCOL: Before starting the setup, determine the project's state by auditing existing artifacts.**
 
-1.  **Read State File:** Check for the existence of `conductor/setup_state.json`.
-    - If it does not exist, this is a new project setup. Proceed directly to Step 1.2.
-    - If it exists, read its content.
+1.  **Audit Artifacts:** Check the file system for the following artifacts (in priority order):
+    -   Complete track: `conductor/tracks/<track_id>/` containing ALL of: `spec.md`, `plan.md`, `metadata.json`, `index.md`
+    -   `conductor/index.md` (top-level)
+    -   `conductor/workflow.md`
+    -   `conductor/code_styleguides/` directory
+    -   `conductor/tech-stack.md`
+    -   `conductor/product-guidelines.md`
+    -   `conductor/product.md`
 
-2.  **Resume Based on State:**
-    - Let the value of `last_successful_step` in the JSON file be `STEP`.
-    - Based on the value of `STEP`, jump to the **next logical section**:
+2.  **Determine Target Section:** Map using the **State Priority Table** (highest match wins):
 
-    - If `STEP` is "2.1_product_guide", announce "Resuming setup: The Product Guide (`product.md`) is already complete. Next, we will create the Product Guidelines." and proceed to **Section 2.2**.
-    - If `STEP` is "2.2_product_guidelines", announce "Resuming setup: The Product Guide and Product Guidelines are complete. Next, we will define the Technology Stack." and proceed to **Section 2.3**.
-    - If `STEP` is "2.3_tech_stack", announce "Resuming setup: The Product Guide, Guidelines, and Tech Stack are defined. Next, we will select Code Styleguides." and proceed to **Section 2.4**.
-    - If `STEP` is "2.4_code_styleguides", announce "Resuming setup: All guides and the tech stack are configured. Next, we will define the project workflow." and proceed to **Section 2.5**.
-    - If `STEP` is "2.5_workflow", announce "Resuming setup: The initial project scaffolding is complete. Next, we will generate the first track." and proceed to **Section 3.0**.
-    - If `STEP` is "3.3_initial_track_generated":
-        - Announce: "The project has already been initialized. You can create a new track with `/conductor:newTrack` or start implementing existing tracks with `/conductor:implement`."
-        - Halt the `setup` process.
-    - If `STEP` is unrecognized, announce an error and halt.
+    | **Artifact Exists** | **Target Section** | **Announcement** |
+    | :--- | :--- | :--- |
+    | Complete track (all 4 files) | **HALT** | "The project is already initialized. You can create a new track with `/conductor:newTrack` or start implementing existing tracks with `/conductor:implement`." |
+    | `conductor/index.md` | **Section 3.0** | "Resuming setup: Scaffolding is complete. Next: generate the first track. (Note: If an incomplete track folder was detected, we will restart this step to ensure a clean, consistent state)." |
+    | `conductor/workflow.md` | **Section 2.6** | "Resuming setup: Workflow is defined. Next: generate project index." |
+    | `conductor/code_styleguides/` | **Section 2.5** | "Resuming setup: Guides/Tech Stack configured. Next: define project workflow." |
+    | `conductor/tech-stack.md` | **Section 2.4** | "Resuming setup: Tech Stack defined. Next: select Code Styleguides." |
+    | `conductor/product-guidelines.md` | **Section 2.3** | "Resuming setup: Guidelines are complete. Next: define the Technology Stack." |
+    | `conductor/product.md` | **Section 2.2** | "Resuming setup: Product Guide is complete. Next: create Product Guidelines." |
+    | (None) | **Section 2.0** | (None) |
+
+3.  **Proceed to Section 2.0:** MUST establish Greenfield/Brownfield context before jumping to the target section.
 
 ---
 
-## 1.2 PRE-INITIALIZATION OVERVIEW
+## 1.2 FAST-FORWARD RESUME CHECK
+**PROTOCOL: After establishing project maturity, fast-forward to the appropriate section.**
+
+1.  **Resume Fast-Forward Check:**
+    -   If **Target Section** (from Section 1.1) is anything other than "Section 2.0":
+        -   Announce the project maturity state (Greenfield/Brownfield) with specific reason
+        -   **IMMEDIATELY JUMP** to the Target Section
+    -   If Target Section is "Section 2.0", proceed normally to Section 2.0
+
+---
+
+## 1.3 PRE-INITIALIZATION OVERVIEW
 1.  **Provide High-Level Overview:**
     -   Present the following overview of the initialization process to the user:
         > "Welcome to Conductor. I will guide you through the following steps to set up your project:
@@ -107,8 +124,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     -   **CRITICAL: You MUST NOT execute any tool calls until the user has provided a response.**
     -   **Upon receiving the user's response:**
         -   Execute `mkdir -p conductor`.
-        -   **Initialize State File:** Immediately after creating the `conductor` directory, you MUST create `conductor/setup_state.json` with the exact content:
-            `{"last_successful_step": ""}`
         -   **Seed the Product Guide:** Write the user's response into `conductor/product.md` under a header named `# Initial Concept`.
 
 5.  **Continue:** Immediately proceed to the next section.
@@ -159,9 +174,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     > Please respond with A or B."
     - **Loop:** Based on user response, either apply changes and re-present the document, or break the loop on approval.
 5.  **Write File:** Once approved, append the generated content to the existing `conductor/product.md` file, preserving the `# Initial Concept` section.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.1_product_guide"}`
-7.  **Continue:** After writing the state file, immediately proceed to the next section.
+6.  **Continue:** Immediately proceed to the next section.
 
 ### 2.2 Generate Product Guidelines (Interactive)
 1.  **Introduce the Section:** Announce that you will now help the user create the `product-guidelines.md`.
@@ -209,9 +222,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     > Please respond with A or B."
     - **Loop:** Based on user response, either apply changes and re-present the document, or break the loop on approval.
 5.  **Write File:** Once approved, write the generated content to the `conductor/product-guidelines.md` file.
-6.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.2_product_guidelines"}`
-7.  **Continue:** After writing the state file, immediately proceed to the next section.
+6.  **Continue:** Immediately proceed to the next section.
 
 ### 2.3 Generate Tech Stack (Interactive)
 1.  **Introduce the Section:** Announce that you will now help define the technology stacks.
@@ -267,9 +278,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
     - **Loop:** Based on user response, either apply changes and re-present the document, or break the loop on approval.
 5.  **Confirm Final Content:** Proceed only after the user explicitly approves the draft.
 6.  **Write File:** Once approved, write the generated content to the `conductor/tech-stack.md` file.
-7.  **Commit State:** Upon successful creation of the file, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-    `{"last_successful_step": "2.3_tech_stack"}`
-8.  **Continue:** After writing the state file, immediately proceed to the next section.
+7.  **Continue:** Immediately proceed to the next section.
 
 ### 2.4 Select Guides (Interactive)
 1.  **Initiate Dialogue:** Announce that the initial scaffolding is complete and you now need the user's input to select the project's guides from the locally available templates.
@@ -290,8 +299,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
                     A) Yes, I want to proceed with the suggested code style guides.
                     B) No, I want to add more code style guides.
     -   **Action:** Construct and execute a command to create the directory and copy all selected files. For example: `mkdir -p conductor/code_styleguides && cp ~/.gemini/extensions/conductor/templates/code_styleguides/python.md ~/.gemini/extensions/conductor/templates/code_styleguides/javascript.md conductor/code_styleguides/`
-    -   **Commit State:** Upon successful completion of the copy command, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-        `{"last_successful_step": "2.4_code_styleguides"}`
 
 ### 2.5 Select Workflow (Interactive)
 1.  **Copy Initial Workflow:**
@@ -319,8 +326,6 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
             -   A) Yes (Enable automated review - Recommended)
             -   B) No (Disable automated review)
         -   **Action:** Update `conductor/workflow.md` based on the user's responses.
-    -   **Commit State:** After the `workflow.md` file is successfully copied or updated, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-        `{"last_successful_step": "2.5_workflow"}`
 
 ### 2.6 Finalization
 1.  **Generate Index File:**
@@ -447,10 +452,7 @@ CRITICAL: When determining model complexity, ALWAYS select the "flash" model, re
             - [Metadata](./metadata.json)
             ```
 
-    d. **Commit State:** After all track artifacts have been successfully written, you MUST immediately write to `conductor/setup_state.json` with the exact content:
-       `{"last_successful_step": "3.3_initial_track_generated"}`
-
-    e. **Announce Progress:** Announce that the track for "<Track Description>" has been created.
+    d. **Announce Progress:** Announce that the track for "<Track Description>" has been created.
 
 ### 3.4 Final Announcement
 1.  **Announce Completion:** After the track has been created, announce that the project setup and initial track generation are complete.

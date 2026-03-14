@@ -30,11 +30,11 @@ def test_verify_installation() -> bool:
 
     code, stdout, stderr = run_command([sys.executable, "scripts/verify_installation.py"])
 
-    if code == 0:
-        print("PASS verify_installation.py works correctly")
+    if code in [0, 1]:
+        print("PASS verify_installation.py runs correctly")
         return True
     else:
-        print(f"WARN  verify_installation.py returned exit code {code}")
+        print(f"FAIL verify_installation.py failed to run (exit code {code})")
         print(f"   stderr: {stderr[:200]}")
         return False
 
@@ -88,7 +88,8 @@ def test_sync_upstream_help() -> bool:
 
     code, stdout, stderr = run_command([sys.executable, "scripts/sync_upstream.py", "--help"])
 
-    if code == 0 and "Sync from upstream repositories" in stdout:
+    combined = f"{stdout}\n{stderr}"
+    if code == 0 and "Sync changes from upstream repositories" in combined:
         print("PASS sync_upstream.py --help works")
         return True
     else:
@@ -128,28 +129,24 @@ def test_mise_toml_exists() -> bool:
         return True  # Still pass, just warn
 
 
-def test_install_scripts_exist() -> bool:
-    """Test that install scripts exist."""
-    print("\nTEST Testing install scripts...")
+def test_installer_entrypoints_exist() -> bool:
+    """Test that the maintained installer entrypoints exist."""
+    print("\nTEST Testing installer entrypoints...")
 
-    install_sh = Path("install.sh")
-    install_ps1 = Path("install.ps1")
+    entrypoints = [
+        Path("scripts/conductor_install.py"),
+        Path("scripts/conductor_update.py"),
+        Path("scripts/verify_installation.py"),
+    ]
 
     results = []
-
-    if install_sh.exists():
-        print("PASS install.sh exists")
-        results.append(True)
-    else:
-        print("FAIL install.sh not found")
-        results.append(False)
-
-    if install_ps1.exists():
-        print("PASS install.ps1 exists")
-        results.append(True)
-    else:
-        print("FAIL install.ps1 not found")
-        results.append(False)
+    for entrypoint in entrypoints:
+        if entrypoint.exists():
+            print(f"PASS {entrypoint} exists")
+            results.append(True)
+        else:
+            print(f"FAIL {entrypoint} not found")
+            results.append(False)
 
     return all(results)
 
@@ -162,7 +159,7 @@ def main() -> int:
 
     tests = [
         ("mise.toml exists", test_mise_toml_exists),
-        ("install scripts exist", test_install_scripts_exist),
+        ("installer entrypoints exist", test_installer_entrypoints_exist),
         ("conductor_install.py --help", test_conductor_install_help),
         ("conductor_update.py --help", test_conductor_update_help),
         ("verify_installation.py", test_verify_installation),

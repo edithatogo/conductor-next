@@ -45,16 +45,18 @@ def _check_skill_dir(skills: list[dict], templates_dir: Path, target_dir: Path, 
         expected = render_skill_content(skill, templates_dir)
         skill_file = target_dir / skill["name"] / "SKILL.md"
         if not skill_file.exists():
-            mismatches.append(f"Missing: {skill_file}")
             if fix:
                 skill_file.parent.mkdir(parents=True, exist_ok=True)
                 skill_file.write_text(expected, encoding="utf-8")
+            else:
+                mismatches.append(f"Missing: {skill_file}")
             continue
         actual = skill_file.read_text(encoding="utf-8")
         if actual != expected:
-            mismatches.append(f"Mismatch: {skill_file}")
             if fix:
                 skill_file.write_text(expected, encoding="utf-8")
+            else:
+                mismatches.append(f"Mismatch: {skill_file}")
     return mismatches
 
 
@@ -67,15 +69,17 @@ def _check_extensions(manifest: dict, *, fix: bool) -> list[str]:
             mismatches.append(f"Missing extension metadata: {tool_name}")
             continue
         if not target_path.exists():
-            mismatches.append(f"Missing: {target_path}")
             if fix:
                 target_path.write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
+            else:
+                mismatches.append(f"Missing: {target_path}")
             continue
         actual = json.loads(target_path.read_text(encoding="utf-8"))
         if actual != expected:
-            mismatches.append(f"Mismatch: {target_path}")
             if fix:
                 target_path.write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
+            else:
+                mismatches.append(f"Mismatch: {target_path}")
     return mismatches
 
 
@@ -97,16 +101,18 @@ def _check_antigravity_workflows(
         expected = render_antigravity_workflow_content(skill, templates_dir)
         workflow_file = target_dir / f"{skill['name']}.md"
         if not workflow_file.exists():
-            mismatches.append(f"Missing: {workflow_file}")
             if fix:
                 target_dir.mkdir(parents=True, exist_ok=True)
                 workflow_file.write_text(expected, encoding="utf-8")
+            else:
+                mismatches.append(f"Missing: {workflow_file}")
             continue
         actual = workflow_file.read_text(encoding="utf-8")
         if actual != expected:
-            mismatches.append(f"Mismatch: {workflow_file}")
             if fix:
                 workflow_file.write_text(expected, encoding="utf-8")
+            else:
+                mismatches.append(f"Mismatch: {workflow_file}")
     return mismatches
 
 
@@ -160,10 +166,12 @@ def main() -> int:
         mismatches.extend(_check_skill_dir(skills, TEMPLATES_DIR, ANTIGRAVITY_SKILLS_GLOBAL_DIR, fix=args.fix))
 
     if mismatches:
-        for _item in mismatches:
-            pass
+        print("Skill artifact drift detected:")
+        for item in mismatches:
+            print(f" - {item}")
         return 1
 
+    print("[OK] Skill artifacts are synchronized.")
     return 0
 
 

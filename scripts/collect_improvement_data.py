@@ -15,10 +15,42 @@ Examples:
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+def _gh_env() -> dict:
+    """Return environment for gh commands, preserving workflow tokens."""
+    env = os.environ.copy()
+    if env.get("GITHUB_TOKEN") and not env.get("GH_TOKEN"):
+        env["GH_TOKEN"] = env["GITHUB_TOKEN"]
+    return env
+
+
+def _extract_npm_vulnerability_total(audit: dict) -> int:
+    """Normalize npm audit vulnerability counts across npm output formats."""
+    vulnerabilities = audit.get("metadata", {}).get("vulnerabilities", 0)
+    if isinstance(vulnerabilities, int):
+        return vulnerabilities
+    if isinstance(vulnerabilities, dict):
+        return sum(value for value in vulnerabilities.values() if isinstance(value, int))
+    return 0
+
+
+def _python_dependency_manifest() -> Path | None:
+    """Return the Python dependency manifest used for security checks."""
+    requirements = Path("requirements.txt")
+    return requirements if requirements.exists() else None
+
+
+def _count_python_vulnerabilities(results: list | dict) -> int:
+    """Count actual Python vulnerabilities, excluding scanner errors."""
+    if isinstance(results, list):
+        return sum(1 for item in results if isinstance(item, dict) and "error" not in item)
+    return 0
 
 
 def run_gh_command(cmd: str, repo: str = None, json_fields: str = None) -> list:
@@ -42,7 +74,14 @@ def run_gh_command(cmd: str, repo: str = None, json_fields: str = None) -> list:
         if repo:
             full_cmd = f"gh {cmd} --repo {repo} --json {fields}"
 
-        result = subprocess.run(full_cmd, shell=True, capture_output=True, text=True, timeout=30)
+        result = subprocess.run(
+            full_cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=_gh_env(),
+        )
 
         if result.returncode != 0:
             print(f"Warning: Command failed: {full_cmd}", file=sys.stderr)
@@ -70,8 +109,17 @@ def check_gh_installed() -> bool:
     Returns:
         True if gh is available and authenticated, False otherwise
     """
+    env = _gh_env()
+    if env.get("GH_TOKEN"):
+        return True
     try:
-        result = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            ["gh", "auth", "status"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            env=env,
+        )
         return result.returncode == 0
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return False
@@ -165,7 +213,14 @@ def collect_upstream_branches(upstream_repo: str, output_file: Path) -> dict:
     # Using gh api to get branches as gh branch command is local-only
     try:
         cmd = f"gh api repos/{upstream_repo}/branches"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=_gh_env(),
+        )
         
         if result.returncode != 0:
             print(f"Warning: Failed to fetch upstream branches: {upstream_repo}", file=sys.stderr)
@@ -235,21 +290,34 @@ def collect_security_data(output_file: Path) -> dict:
 
     # Python safety check
     print("  Running Python dependency check...")
+    requirements = _python_dependency_manifest()
     try:
         # Try safety first
         result = subprocess.run(["safety", "check", "--json"], capture_output=True, text=True, timeout=60)
         if result.stdout:
-            security_data["python_safety"] = json.loads(result.stdout)
+            try:
+                security_data["python_safety"] = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                security_data["python_safety"] = []
     except (subprocess.TimeoutExpired, FileNotFoundError):
         # Fallback to pip-audit
-        try:
-            result = subprocess.run(
-                ["pip-audit", "-r", "requirements.txt", "-f", "json"], capture_output=True, text=True, timeout=60
-            )
-            if result.stdout:
-                security_data["python_safety"] = json.loads(result.stdout)
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            security_data["python_safety"] = {"error": "No Python security scanner available"}
+        pass
+
+    if security_data["python_safety"] == []:
+        if requirements is not None:
+            try:
+                result = subprocess.run(
+                    ["pip-audit", "-r", str(requirements), "-f", "json"],
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
+                if result.stdout:
+                    security_data["python_safety"] = json.loads(result.stdout)
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                security_data["python_safety"] = {"error": "No Python security scanner available"}
+        else:
+            security_data["python_safety"] = {"error": "No requirements.txt found for pip-audit"}
 
     # Save to file
     with open(output_file, "w", encoding="utf-8") as f:
@@ -257,16 +325,14 @@ def collect_security_data(output_file: Path) -> dict:
 
     # Calculate stats
     npm_vulns = sum(
-        audit.get("metadata", {}).get("vulnerabilities", 0)
+        _extract_npm_vulnerability_total(audit)
         for audit in security_data["npm_audits"].values()
         if isinstance(audit, dict) and "error" not in audit
     )
 
     return {
         "npm_vulnerabilities": npm_vulns,
-        "python_vulnerabilities": len(security_data["python_safety"])
-        if isinstance(security_data["python_safety"], list)
-        else 0,
+        "python_vulnerabilities": _count_python_vulnerabilities(security_data["python_safety"]),
     }
 
 

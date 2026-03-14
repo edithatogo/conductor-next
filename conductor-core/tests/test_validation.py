@@ -34,3 +34,19 @@ def test_validate_gemini_toml_mismatch(tmp_path):
     valid, msg = service.validate_gemini_toml(str(toml), "setup.j2")
     assert valid is False
     assert msg == "Content mismatch"
+
+
+def test_validate_gemini_toml_invalid_toml(tmp_path):
+    templates = tmp_path / "templates"
+    templates.mkdir()
+    (templates / "setup.j2").write_text("CORE PROMPT")
+
+    commands = tmp_path / "commands"
+    commands.mkdir()
+    toml = commands / "setup.toml"
+    toml.write_text('description = "test"\nprompt = """CORE PROMPT"""\ninvalid = [')
+
+    service = ValidationService(str(templates))
+    valid, msg = service.validate_gemini_toml(str(toml), "setup.j2")
+    assert valid is False
+    assert msg.startswith("Invalid TOML")

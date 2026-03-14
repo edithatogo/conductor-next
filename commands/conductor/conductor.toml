@@ -1,3 +1,5 @@
+description = "conductor"
+prompt = """
 ﻿---
 name: conductor
 description: Context-driven development methodology. Understands projects set up with Conductor (via Gemini CLI or Claude Code). Use when working with conductor/ directories, tracks, specs, plans, or when user mentions context-driven development.
@@ -134,3 +136,4 @@ You know:
 ## References
 
 For detailed workflow documentation, see [references/workflows.md](references/workflows.md).
+"""
