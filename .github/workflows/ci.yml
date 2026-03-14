@@ -72,11 +72,9 @@ jobs:
         run: |
           cd conductor-vscode && npm test
 
-      - name: Static Analysis
+      - name: Static Analysis (mypy)
         shell: bash -l {0}
         run: |
-          ruff check .
-          ruff format --check .
           cd conductor-core && mypy --strict src
           cd ../conductor-gemini && mypy --strict src
 

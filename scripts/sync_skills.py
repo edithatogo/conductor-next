@@ -95,7 +95,8 @@ def _perform_sync(target_base_dir: Path, skills: Iterable[dict], *, flat: bool =
 
         # Write LF-only text so frontmatter stays portable across platforms.
         target_file.parent.mkdir(parents=True, exist_ok=True)
-        target_file.write_text(content, encoding="utf-8", newline="\n")
+        with target_file.open("w", encoding="utf-8", newline="\n") as handle:
+            handle.write(content)
 
 
 def _perform_antigravity_global_sync(target_base_dir: Path, skills: Iterable[dict]) -> None:
