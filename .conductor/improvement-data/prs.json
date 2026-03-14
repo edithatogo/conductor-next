@@ -1,5 +1,42 @@
 {
-  "open": [],
+  "open": [
+    {
+      "author": {
+        "is_bot": true,
+        "login": "app/github-actions"
+      },
+      "createdAt": "2026-03-14T00:51:20Z",
+      "labels": [],
+      "number": 3,
+      "state": "OPEN",
+      "title": "Monthly Repository Improvement - improvement_plan_20260303",
+      "updatedAt": "2026-03-14T00:51:20Z"
+    },
+    {
+      "author": {
+        "is_bot": true,
+        "login": "app/github-actions"
+      },
+      "createdAt": "2026-03-14T00:41:20Z",
+      "labels": [],
+      "number": 2,
+      "state": "OPEN",
+      "title": "Sync from jnorthrup/conductor2",
+      "updatedAt": "2026-03-14T00:41:20Z"
+    },
+    {
+      "author": {
+        "is_bot": true,
+        "login": "app/github-actions"
+      },
+      "createdAt": "2026-03-14T00:41:16Z",
+      "labels": [],
+      "number": 1,
+      "state": "OPEN",
+      "title": "Sync from gemini-cli-extensions/conductor",
+      "updatedAt": "2026-03-14T00:41:16Z"
+    }
+  ],
   "closed": [],
-  "fetched_at": "2026-03-05T12:04:29.153144"
+  "fetched_at": "2026-03-14T00:53:25.590471"
 }
