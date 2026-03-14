@@ -95,6 +95,12 @@ jobs:
         run: |
           ./scripts/build_vsix.sh
 
+      - name: Prepare Generated Artifacts
+        shell: bash -l {0}
+        run: |
+          python scripts/validate_conductor_assets.py --sync
+          CONDUCTOR_SYNC_REPO_ONLY=1 CONDUCTOR_ANTIGRAVITY_SKILLS=1 python scripts/sync_skills.py
+
       - name: Validate Artifacts
         shell: bash -l {0}
         run: |
