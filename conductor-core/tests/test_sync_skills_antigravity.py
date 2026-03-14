@@ -67,15 +67,25 @@ def test_sync_to_antigravity():
         # Verification 1: Check Local Antigravity Sync (.antigravity/skills/conductor-test/SKILL.md)
         expected_local_file = antigravity_dir / "conductor-test" / "SKILL.md"
 
-        # We need to find if write_text was called with this path.
-        # Note: Paths might be absolute.
-        written_files = [str(call.args[0]) for call in mock_write_text.call_args_list]
+        # Collect writes performed through either Path.write_text() or open(..., "w").
+        written_files = {str(call.args[0]) for call in mock_write_text.call_args_list}
+        opened_for_write = set()
+        for call in mock_open.call_args_list:
+            if not call.args:
+                continue
+            mode = call.args[1] if len(call.args) > 1 else call.kwargs.get("mode", "")
+            if "w" in mode:
+                opened_for_write.add(str(call.args[0]))
 
-        assert str(expected_local_file) in written_files, f"Did not attempt to write to {expected_local_file}"
+        assert str(expected_local_file) in (written_files | opened_for_write), (
+            f"Did not attempt to write to {expected_local_file}"
+        )
 
         # Verification 2: Check Global Antigravity Sync (Flat structure)
         # Assuming CONDUCTOR_SYNC_REPO_ONLY is not set or handling default
         # The script checks env var. We should mock os.environ or ensure it's not set.
 
         expected_global_file = antigravity_global_dir / "conductor-test.md"
-        assert str(expected_global_file) in written_files, f"Did not attempt to write to {expected_global_file}"
+        assert str(expected_global_file) in (written_files | opened_for_write), (
+            f"Did not attempt to write to {expected_global_file}"
+        )
