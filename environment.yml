@@ -18,5 +18,6 @@ dependencies:
   - tomli
   - pip
   - pip:
+    - eval-type-backport
     - PyGithub
     - types-PyYAML
