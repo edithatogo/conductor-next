@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import runpy
 from unittest.mock import patch
 
@@ -97,8 +97,8 @@ def test_main_invocation_help():
 
 def test_cli_run_main_block(repo_dir):
     # Using runpy to execute the file as __main__
-    cli_path = os.path.join("conductor-gemini", "src", "conductor_gemini", "cli.py")
+    cli_path = Path(__file__).resolve().parents[1] / "src" / "conductor_gemini" / "cli.py"
     with patch("sys.argv", ["conductor", "--help"]):
         with pytest.raises(SystemExit) as e:
-            runpy.run_path(cli_path, run_name="__main__")
+            runpy.run_path(str(cli_path), run_name="__main__")
         assert e.value.code == 0
