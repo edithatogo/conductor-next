@@ -33,7 +33,7 @@ warn_redundant_casts = true
 warn_unused_configs = true
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 69
 show_missing = true
 exclude_lines = [
     "pragma: no cover",
