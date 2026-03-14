@@ -1,13 +1,13 @@
 # Improvement Data Collection Summary
 
-**Generated:** 2026-03-05 12:04:29
+**Generated:** 2026-03-14 00:59:22
 
 ## Upstream Synchronization (Beta Tool)
 
 | Metric | Value |
 |--------|-------|
 | Upstream Repo | gemini-cli-extensions/conductor |
-| Total Branches | 17 |
+| Total Branches | 18 |
 | Beta/Dev Branches | 0 |
 | Target Branches | None detected |
 
@@ -15,9 +15,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Open PRs | 0 |
+| Open PRs | 3 |
 | Dependabot PRs | 0 |
-| Community PRs | 0 |
+| Community PRs | 3 |
 | Closed (Recent) | 0 |
 
 ## Issues
@@ -31,7 +31,7 @@
 
 | Metric | Value |
 |--------|-------|
-| NPM Vulnerabilities | 0 |
+| NPM Vulnerabilities | 44 |
 | Python Vulnerabilities | 0 |
 
 ## Files Generated
