@@ -16,6 +16,8 @@ dependencies:
   - pytest-cov
   - pyyaml
   - pip
+  # Gemini CLI extensions are managed by the separate Node.js CLI:
+  # https://geminicli.com/docs/extensions/ (not a Python package).
+  # Never install the nonexistent PyPI distribution gemini-cli-extension-api.
   - pip:
-    - gemini-cli-extension-api
     - types-PyYAML

@@ -17,7 +17,10 @@ def test_project_error():
 
 
 def test_git_service_more(tmp_path):
-    git.Repo.init(tmp_path)
+    repo = git.Repo.init(tmp_path)
+    with repo.config_writer() as config:
+        config.set_value("user", "name", "Conductor CI")
+        config.set_value("user", "email", "conductor-ci@example.invalid")
     gs = GitService(str(tmp_path))
     (tmp_path / "f").write_text("c")
     gs.add("f")
