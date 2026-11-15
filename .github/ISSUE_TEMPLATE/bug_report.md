@@ -1,6 +1,6 @@
 ---
-name: Bug Report
-description: Report a bug or unexpected behavior
+name: Bug Report (Markdown)
+about: Report a bug or unexpected behavior
 title: '[Bug]: '
 labels: ['bug', 'triage']
 assignees: []

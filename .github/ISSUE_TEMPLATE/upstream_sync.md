@@ -1,6 +1,6 @@
 ---
 name: Upstream Sync Issue
-description: Report an issue with upstream repository synchronization
+about: Report an issue with upstream repository synchronization
 title: '[Sync]: '
 labels: ['upstream-sync', 'triage']
 assignees: []
