@@ -41,6 +41,7 @@ def test_sync_to_antigravity():
         patch("builtins.open", new_callable=MagicMock) as mock_open,
         patch("pathlib.Path.mkdir"),
         patch("pathlib.Path.write_text", autospec=True) as mock_write_text,
+        patch("pathlib.Path.write_bytes", autospec=True) as mock_write_bytes,
     ):
         # Import inside the patch context to ensure clean slate if needed,
         # though standard import caching applies.
@@ -69,7 +70,7 @@ def test_sync_to_antigravity():
 
         # We need to find if write_text was called with this path.
         # Note: Paths might be absolute.
-        written_files = [str(call.args[0]) for call in mock_write_text.call_args_list]
+        written_files = [str(call.args[0]) for call in mock_write_bytes.call_args_list]
 
         assert str(expected_local_file) in written_files, f"Did not attempt to write to {expected_local_file}"
 
@@ -78,4 +79,5 @@ def test_sync_to_antigravity():
         # The script checks env var. We should mock os.environ or ensure it's not set.
 
         expected_global_file = antigravity_global_dir / "conductor-test.md"
-        assert str(expected_global_file) in written_files, f"Did not attempt to write to {expected_global_file}"
+        written_workflows = [str(call.args[0]) for call in mock_write_text.call_args_list]
+        assert str(expected_global_file) in written_workflows, f"Did not attempt to write to {expected_global_file}"
